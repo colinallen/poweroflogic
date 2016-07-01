@@ -1,0 +1,161 @@
+# Error messages for proof checker
+$ERRORHEAD = "\n".'<font color="red">'."\n";
+$ERRORFOOT = "\n</font>\n";
+
+# general proof errors
+$NOTWFF = " is not a wff in the formal logical language.";
+$NOCAPS = " Sentence letters and predicate letters must be capitalized.";
+$NUMINWFF = " Wffs may not contain numbers.";
+$WFFZERO = " Check for a 0 (zero) - perhaps you intended capital O.";
+
+$LINENUM = " is an inappropriate line number - should be ";
+$LINENUMNIL = "Unable to determine line number - should be ";
+$LINENUMFORM = " - inappropriate line number format - use bare number: i.e. ";
+$NOTPREM = " is not a premise of the argument.  Only argument premises may be entered without any annotation.  The annotation must either show the application of a rule of proof (e.g., \"1,2,MP\", \"2,5,DS\") or state \"Assume\" if starting a conditional or <i>reductio ad absurdum</i> proof.";
+$BADFORMAT = "Badly formatted line: either the formula entered is not well formed, or the annotation on the right hand side should be checked to make sure that line numbers are placed before the name of the rule.";
+$NOCONC = "A conclusion for this argument must be specified. Enter a conclusion to the right of the last premise of the argument (or above the first assumption if proving a theorem)  Precede the conclusion with either \":.\" or \".:\" ";
+$NOSEQ = $NOCONC;
+$DOUBLECONC = "The argument's conclusion has already been stated on a previous line.  The \"therefore\" symbol is not allowed at this line.  At this point in the proof, the line must be justified by indicating which rule is being applied.";
+$INDENT = "Wrong number of box lines at this line. Use one or more \"|\" in front of the line number at the beginning of the line to indicate the correct box structure at this step. Box lines are used to indicate the scope of assumptions in the proof.  A box line is started when an assumption is made and ended only when the assumption is discharged by CP or by RAA.";
+$NOSUCHRULE = "The rule mentioned in this justification does not exist.";
+$NOSENT = "This line appears not to contain a symbolic formula.";
+$DOUBLECHECK = " (If you are certain that the rule application is structurally correct, make sure that the correct lines have been cited in the justification.)";
+
+# general rule application errors
+$NOTAVAILABLE = " - this number in the rule annotation corresponds to a line that is not available for inferences at this point in the proof because it falls within the scope of a discharged assumption.";
+$TOOHIGH = "in the justification at this line is out of range.  The justification must only cite lines prior to the current one";
+$WRONGNUM = "Wrong number of lines cited for this rule.  Required for ";
+$BADSUBPROOFEND = " should be the end of the subproof.  I.e. the second number in the annotation at this line should be the number of the immediately previous line.";
+$CONDREQD = "requires at least one conditional statement.  Neither line cited in the justification is a conditional.";
+$CONDCONCREQD = "conclusion of this rule must be a conditional.";
+$NEGREQD =  "requires at least one negation.  Neither line cited in the justification is a negation.";
+
+# specific rule errors
+# MP
+$BADMP = "Incorrect application of MP.  Check to make sure that the conclusion matches the right hand side of the conditional, and has been correctly derived using a sentence matching the left hand side. $DOUBLECHECK";
+$BADMP_CONSEQ = "Incorrect application of MP.  The derived conclusion does not match the right hand side of the conditional. $DOUBLECHECK";
+$BADMP_ANTEC = "Incorrect application of MP.  The antecedent of the conditional premise does not exactly match the other premise. $DOUBLECHECK";
+
+# MT
+$BADMT = "Incorrect application of MT.  Check to make sure that the conclusion matches the negation of the left hand side of the conditional, and has been correctly derived from the negation of its right hand side. $DOUBLECHECK";
+
+#CP
+$WRONGCPSPAN = "This rule requires proper identification of a sequence of lines.  The annotation should include two numbers to indicate a subproof that begins with an assumption of the antecedent of the concluded conditional and ends with its consequent.";
+$BADCPANTE = "Bad application of CP - the antecedent of the concluded conditional does not match the formula appearing at the first line number cited.";
+$BADCPCONS = "Bad application of CP - the consequent of the concluded conditional does not match formula appearing at the second line number cited.";
+$BADDISCH = "This is incorrect because it appears to discharge something other than the most recent undischarged assumption (i.e. the first number in the annotation is incorrect).  At this point, the only assumption that may be discharged is the one at line";
+
+# RAA
+$WRONGRAASPAN = "This rule requires proper identification of a sequence of lines in the annotation.  For RAA there must be two numbers to indicate a subproof that begins with an assumption and ends with a contradiction.";
+$RAABADPREM = "The last line of an RAA subproof must be a <u>conjunction</u>.  Specifically, the second number in the rule annotation must identify a line containing a sentence of the form (a.~a)";
+$RAANOTCONTRAD = "The last line of an RAA subproof must be a <u>contradiction</u>.  Specifically, the second number in the rule annotation must identify a line containing a sentence of the form (a.~a)";
+$RAABADCONC = "The conclusion of RAA must deny the discharged assumption - i.e., the formula at this line must be a negation of the one assumed at the first number given in the rule annotation, or vice versa.";
+
+# DN
+$BADDN = "Incorrect application of DN.  The rule Double Negation may be used to introduce or eliminate <em>one pair</em> of adjacent tildes (~~) anywhere in the line. Nothing else may be changed. $DOUBLECHECK";
+
+# COM
+$BADCOM = "Incorrect application of Com.  The rule of Commutation may be used to reverse the order of one conjunction or disjunction anywhere in the line. Nothing else may be changed. $DOUBLECHECK";
+
+
+# UI
+$UNIVREQD = "The line cited for this rule must contain a universal statement.  It cannot be applied to a ";
+$NOTINST  = "The statement at this line is not an instance of the statement in the line cited in the justification.";
+
+# EI
+$EXISREQD = "The line cited for this rule must contain an existential statement.  Be sure that the WFF in the cited line does not simply contain an existential statement as a <em>component</em>.";
+$EIVARFREE = "The instantiated variable in the conclusion of EI must not appear free at an earlier line.  Here it is free at earlier line number ";
+$NOTVAR = "The quantifier instantiation rule requires that the concluded instance use a variable in the range v - z.";
+$NOTNAME = "To form an instance of a quantified sentence, you must use an individual constant, that is, a lower case letter in the range a - u.";
+$EINAMEFOUND = "The instantial constant in the conclusion of EI must not appear at an earlier line.  It appears at line number ";
+$EINAMEINCONC = "One cannot use an instantial constant that appears in the conclusion to be proved.";
+$EREBOUND = "The rule as stated in the text book is incomplete.  There is an additional requirement that the instantiated variable must be free, not bound by another quantifier -- i.e. another variable must be chosen.";
+
+# UG
+$UNIVCREQD = "The conclusion of this rule is required to be a universal statement.";
+$NOTINSTC  = "The statement at the line on which this rule application is based is not correctly related to the quantified statement derived here as the conclusion of the rule. Make sure that formula you started with is an instance of the quantified statement you derived. ";
+$NOTINSTVAR = "Universal generalization cannot be applied to a constant, only to a free variable.";
+$NOTINSTNAME = "Universal generalization cannot be applied to a variable, only to a constant.";
+# Added by CM, 3 May 09:
+$UGCONSTINCONC = "The constant being generalized upon occurs in the universally quantified statement being inferred by UG.";
+$UGUNIV = "The constant appears in a previous universal statement, i.e. at line ";
+$UGNOEI = "The constant was derived by an application of EI at line ";
+$UGVARFREE = "The generalized variable also appears free at a line reached by EI, i.e. at line ";
+$UGVARFREEASS = "The generalized variable also appears free in an undischarged assumption, i.e. at line ";
+$UGCONSTINPREMS = "The generalized constant must not appear in any of the premises.";
+
+# EG
+$EXISCREQD = "Conclusion of this rule must be an existential statement.";
+$EGNOTFREEVAR = "The generalized variable must be free in the line on which this step is based.";
+
+# QN
+$BADQN = "Incorrect application of the rule of Quantifier Negation.";
+
+# ID
+$BADID = "The rule of identity can be used only to conclude a statement of the form \"(x=x)\" or \"(a=a)\".";
+
+#SM is Symmetry
+$SMPREMCONC = "For this rule to be correctly applied, the premise of the rule should be of the same form as the conclusion of the rule and either both should be identity statements or both should be negations of identity statements.";
+$SMBADMATCH = "This rule requires one to reverse the right and left hand sides of the identity statement. $DOUBLECHECK";
+
+#LL
+$LLNOID = "At least one of the premises for Leibniz' Law must be an identity statment.";
+$LLNOMATCH = "The conclusion of Leibniz' Law must be of the same type as the statement that is used as the model for the replacement.";
+# does LL actually require a change?
+$LLNOCHANGE = "Your conclusion is the same as the original formula. Make sure that at least one substitution has been made in accordance with the identity statement."; 
+$LLBADSUB = "This application of Leibniz' Law failed because the conclusion is not a proper substitution according to the lines cited.  Make sure that a variable has not been substituted in a bound context and that no changes have been made in the conclusion besides those that correspond to the substitution.";
+$LLNOTINST = "Incorrect substitution of one of the terms for the other.  This may be because there was a substitution for a variable that is bound by a quantifier.";
+$LLNOTFREE = "Both terms of the substitution must occur free in their respective formulas.";
+
+#HS
+$HSCONDREQD = "HS requires that both lines cited be conditionals.";
+$HSCONDCONC = "HS requires a conditional conclusion.";
+$BADHS = "Incorrect application HS. Check to make sure that the right hand side of one of the conditionals cited matches the left hand side of the other conditional cited, the left hand side of the inference matches the left hand side of one of the conditionals cited, and the right hand side of the inference matches the right hand side of the other conditional cited. $DOUBLECHECK";
+
+#DS
+$DSDISREQD = "A disjunction is required to correctly apply DS.  Neither of the lines cited in the justification is a disjunction.";
+$BADDS = "DS allows a conclusion that is one of the disjuncts of a disjunction, provided one has the negation of the other disjunct. Check to make sure that the conclusion matches one of the disjuncts of the disjunction cited, and that the other line cited contains the negation of the other disjunct. $DOUBLECHECK";
+
+#SIMP
+$CONJREQD = "A conjunction is required to use Simp.  The line cited in the justification is not a conjunction.";
+$BADSIMP = "Simplification allows one of the conjuncts of a conjunction to be concluded. Make sure that the conclusion matches one of the conjuncts of the conjunction cited.";
+
+#ADD
+$ADDDISJREQD = "The conclusion of an inference using addition must be a disjunction.";
+$BADDADD = "Addition allows one to create a disjunction using a wff from a previous line as the left disjunct. Check to make sure that the wff at the line cited in the annotation matches the left disjunct of the conclusion.";  
+## use version below if Layman adopts sensible version of rule
+#$BADDADD = "Addition allows one to create a disjunction using a wff from a previous line as one of the disjuncts. Check to make sure that the wff at the line cited in the annotation matches one of the disjuncts in the conclusion.";  
+
+#CONJ
+$CONJCNJREQD = "This rule requires a conjunction as its conclusion.";
+$BADCONJ = "The rule Conjunction allows creation of a conjunction from any two wffs stated in previous lines. Make sure that the <em>complete</em> wffs from each line cited compose the inferred conjunction." ;  
+
+#CD
+$CDCONDREQD = "This rule requires two conditional statements to be cited.";
+$DISJREQD = "This rule requires a disjunction to be cited, in addition to two conditionals.";
+$CDDISJCONCREQD = "The conclusion of a dilemma inference must be a disjunction.";
+$BADCD = "CD allows one to infer a disjunction composed of the consequents of two conditionals, provided one has a disjunction composed of the antecedents of the two conditionals. Check to make sure that both disjuncts of the cited disjunction match the antecedents of the two cited conditionals, and that the inference drawn is a disjunction whose disjuncts are the consequents of the two cited conditionals.";
+
+#CONT
+$BADCONT = "Incorrect application of CONT. This rule allows either of the following inferences: (i) one can negate both the antecedent and consequent of a conditional and then switch them; or (ii) if both the antecedent and the consequent of a conditional are negations, one can remove the (leftmost) negation from both and switch them. $DOUBLECHECK";
+
+#MI
+$BADMI = "Incorrect application of MI. This rule allows conversion of a conditional to a disjunction, and vice versa.  If converting a conditional to a disjunction, the negation of the conditional's antecedent becomes the left disjunct of the disjunction.  If converting a disjunction into a conditional, the left disjunct must be negated, and the unnegated subWFF becomes the antecedent to the conditional. $DOUBLECHECK"; 
+
+#RE
+$BADRE = "Incorrect application of RE.  This rule allows a conjunction (or disjunction) whose conjuncts (disjuncts) are exactly the same WFF to replace, or be replaced by, that WFF.  As with all equivalence rules, the conjunction (disjunction) can be the entire WFF in a line of a proof, or just a part of a WFF.  $DOUBLECHECK";
+
+#ME
+$BADME = "Incorrect application of ME. This rule allows a biconditional to replace, or be replaced by, either a conjunction of two conditionals, or a disjunction composed of two conjunctions.  Be sure that the component statements occur in the proper order. $DOUBLECHECK";
+
+#EX
+$BADEX = "Incorrect application of EX. By EX, a conditional (a-&gt;(b-&gt;c)) whose consequent also happens to be a conditional can replace, or be replaced by, a conditional ((a.b)-&gt;c) whose antecedent is a conjunction of the two antecedents in the first conditional.  (\"a\", \"b\", and \"c\" here stand for any statements whatever.) $DOUBLECHECK";
+
+#AS
+$BADAS = "Incorrect application of AS. AS allows a change in the grouping of either a conjunction or disjunction. In order to apply this rule to a conjunction, one of the conjuncts must also be a conjunction, and one of its conjuncts must be grouped with the other conjunct in the newly formed conjunction. The same is roughly true with a disjunction. One of the disjuncts must be a disjunction, and one of its disjuncts must be grouped with the other disjunct in the newly formed disjunction. $DOUBLECHECK";
+
+#DIST
+$BADDIST = "Incorrect application of DIST. DIST allows conversion of a conjunction with a disjunction as its <em>second</em> conjunct, into a disjunction composed of two conjunctions. DIST also allows conversion of a disjunction, with a conjunction as its second disjunct, into a conjunction composed of two disjunctions. $DOUBLECHECK";
+
+#DEM
+$BADDEM = "Incorrect application of DEM. DEM allows one to move from a negated conjunction to a disjunction composed of the negations of the two conjuncts, and vice versa. DEM also allows one to move from a negated disjunction to a conjunction composed of the negations of the two disjuncts, and vice versa. $DOUBLECHECK";

@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+
+## Setup
+$countershome = "counters/";
+umask(002);
+
+##
+#     COUNTER_DATE.PL
+#       by John Long (longjohn@sage.net)
+#       12/06/96
+#
+#     Returns the date stamp from a counter data file in the
+#		form: mon/day/year
+#
+#		Called as an SSI:
+#
+#			<!--#exec cgi="/cgi-gen-ctr/counter_date.pl"-->
+#
+#		Related files:
+#			COUNTER.PL
+#			QUITE_COUNTER.PL
+#			REPORT.PL
+#			RESET.PL
+##
+print "Content-type: text/html\n\n";
+
+## replace slashes w/ underscores
+($page = $ENV{'DOCUMENT_URI'}) =~ s/\//_/g;
+## prepend the root directory for the counter files
+$page = $countershome.$page;
+
+if(-e $page)
+{
+	open(COUNTER,"+< $page")|| die "Can't open $page - $!\n";
+	flock(COUNTER,2);
+	$mtime = (split ' ', <COUNTER>)[1];
+	flock(COUNTER,8);
+	close(COUNTER);
+	if ($mtime)
+	{
+		($mday,$mon,$year) = (localtime ($mtime))[3..5];
+		$mon++;
+		print "$mon/$mday/$year";
+	}
+#	print "-$mtime-";
+}
+
+## TheEnd
+exit(0);
+

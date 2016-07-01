@@ -1,0 +1,66 @@
+#!/usr/bin/perl -w
+
+## Setup
+$countershome = "counters/";
+umask(002);
+
+#Called as an SSI:
+#
+#	<!--#exec cgi="/cgi-gen-ctr/counter.pl">
+#
+# Modifications: Renamed -- COUNTER.PL
+#      12/06/96 by John Long (longjohn@sage.net)
+#               Counter files now include the date stamp for
+#               when they were created. This value may be reset
+#               by the files owner by calling "reset.pl"
+#
+#	Related files:
+#			COUNTER_DATE.PL
+#			QUITE_COUNTER.PL
+#			REPORT.PL
+#			RESET.PL
+#####################################
+#
+#     This counter script is meant to be used for a site-wide setup, although
+# it can certainly be used by individuals if they want counters on their own
+# pages.
+#
+#     For an explanation of how this script works and how to make sure it
+# will work with your server, see:  
+# http://web.sau.edu/~mkruse/www/info/ssi.html
+#
+#     To install this script:
+# 1.  Move it to its own directory, like /cgi-bin/counters/
+#     It will create many files in the dirctory where it is located, so put
+#     it somewhere off on its own.
+# 2.  make it executable (chmod a+x counter.cgi)
+# 3.  make the directory where it is at world-writable (so the server can 
+#     update the counter files).
+# That's it!
+# Call it as you would any other server-side-include
+print "Content-type: text/html\n\n";
+
+## replace slashes w/ underscores
+($page = $ENV{'DOCUMENT_URI'}) =~ s/\//_/g;
+## prepend the root directory for the counter files
+$page = $countershome.$page;
+
+unless(-e $page)
+{
+	open(NEW,"> $page");#First attempt at counter, create the file,
+	$mtime =	(stat $page)[9];
+	print NEW "0 $mtime";      # set the count to zero, and exit
+	close(NEW);
+	exit(0);
+}
+open(COUNTER,"+< $page")|| die "Can't open $page - $!\n";
+flock(COUNTER,2);
+($hits, $mtime) = split ' ', <COUNTER>;
+seek(COUNTER,0,0);
+$hits++;
+print COUNTER "$hits $mtime";
+flock(COUNTER,8);
+close(COUNTER);
+print $hits;
+exit(0);
+##
