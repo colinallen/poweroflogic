@@ -30,7 +30,7 @@ if ($program =~ /(\/\de)\//) {
 
 %polmenu =
     ('About this site'=>($EDITION|'/'),
-     'Bug Webmaster'=>"$cgibase/help.cgi?helpfile=bugs.html;helpsubject=Email+Webmaster",
+     'Bug Webmaster'=>"$cgibase/help.cgi?helpfile=bugs.html;helpsubject=Email+Logic+Pedallers",
      'Web Site by ...'=>"$EDITION/about.html",
      );
 
@@ -106,7 +106,7 @@ sub start_polpage {
 	       -charset => 'utf-8'),
 	start_html(#-title=>"$title -- $pageoutstatus",
 		   -title=>"$title",
-		   -author=>'webmaster@www.poweroflogic.com',
+		   -author=>'logicpedallers@gmail.com',
 		   -meta=>{'keywords'=>'logic propositional venn predicate',
 			   'copyright'=>'copyright 2002-2012 Logic Pedallers',
 			   'Content-type'=>'text/html; charset=utf-8'},
