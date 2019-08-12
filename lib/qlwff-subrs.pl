@@ -24,9 +24,10 @@ sub isinstance {
 	$var = &getvar($gen);   # the var in the quantifier
 
 	$gen = &getscope($gen); # formula in the scope of the quantifier
-	return 'VAC' if (!&isfree($var,$gen)   ## vacuous when the var isn't free the scope
-			 and &samewff($gen,$partic)   ## and nothing else has changed
-			 );
+	return 'VAC'
+	    if (!&isfree($var,$gen)   ## vacuous when the var isn't free the scope
+		and &samewff($gen,$partic)   ## and nothing else has changed
+	    );
 	$gen =~ /^([^$var]+)($var+)/;
 	return 0 if length($1) >= length($partic);
 	$const = substr($partic,length($1),1);
@@ -306,6 +307,12 @@ sub permutate {
     map {my $row = $_;
          map {my $tmp = [@$row];
               splice @$tmp, $_, 0, $first; $tmp;} (0 .. @$row);} permutate(@_);
+}
+
+sub list_constants {
+    my ($form) = @_;
+    $form =~ s/[^a-u]//g;
+    return split(//,$form);
 }
 
 1;          # required by require

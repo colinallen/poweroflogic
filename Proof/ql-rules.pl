@@ -80,21 +80,30 @@ sub EI { # EXISTENTIAL INSTANTIATION
 
     # conclusion is instance
     my $instname = &isinstance($conc,$prems[0]);
+
     return($NOTINST)
 	if !$instname;
     
     return($NOTNAME)
 	unless $instname eq "VAC" or $instname=~ /[a-u]/;
 
-    # name must not appear in earlier lines
+    my @constants_in_conc = &list_constants($conc);
+
+    # name must not appear in earlier lines, even if VACuous
     for($j=0;$j<$i;$j++){
 	return($EINAMEFOUND.++$j.'.')
 	    if &get_linesent($_[$j]) =~ /$instname/;
+	foreach (@constants_in_conc) {
+	    return($VACNAMEFOUND.++$j.'.')
+		if ($instname eq "VAC" and
+		    $j != $premnums[0] and
+		    &get_linesent($_[$j]) =~ /$_/)
+	}
     }
-
+    
     # name must not appear in the conclusion of the proof
     return($EINAMEINCONC) if $conclusion =~ /$instname/;
-
+    
     return "";
 }
 

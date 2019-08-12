@@ -68,6 +68,7 @@ $EIVARFREE = "The instantiated variable in the conclusion of EI must not appear 
 $NOTVAR = "The quantifier instantiation rule requires that the concluded instance use a variable in the range v - z.";
 $NOTNAME = "To form an instance of a quantified sentence, you must use an individual constant, that is, a lower case letter in the range a - u.";
 $EINAMEFOUND = "The instantial constant in the conclusion of EI must not appear at an earlier line.  It appears at line number ";
+$VACNAMEFOUND = "Any constant in the conclusion of EI must not appear at an earlier line.  Check this line against line number ";
 $EINAMEINCONC = "One cannot use an instantial constant that appears in the conclusion to be proved.";
 $EREBOUND = "The rule as stated in the text book is incomplete.  There is an additional requirement that the instantiated variable must be free, not bound by another quantifier -- i.e. another variable must be chosen.";
 
