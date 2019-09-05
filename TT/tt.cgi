@@ -62,7 +62,8 @@ sub picktt {
     my ($chapter) = split(/\./,$POL::exercise,2);
     my $probfile = "$EXHOME$chapter/$POL::exercise";
     my $subtitle = "Exercise $POL::exercise".": Truth Tables";
-    my $instructions = "<center><strong><font color=$WORKSPACETEXTCOLOR>Pick an argument to work on!</font></strong></center>";
+    $subtitle = "Create your own truth table" unless $subtitle;
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold \">Pick an argument to work on!</span>";
     my $preamble = "";
     
     $cgi->delete('tt'); # delete any previous selection
@@ -77,25 +78,14 @@ sub picktt {
     }
     close(FILE);
     $preamble =~ s/\#!preamble//g;
+    $instructions .= "<br>".$preamble;
+    if (@prev_chosen) {
+	$instructions .= $PREVCHOICEINSTRUCTION;   # Note that $smallgreyPoLogo indicates previous selection
+    }
+
 
     &start_polpage('Choose an argument');
-    &pol_header($subtitle);  # create outer table, print the PoL header
-
-    print                    # Print the preamble in the probfile
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n";
-
-    if (@prev_chosen) {
-            print            # Note that $smallgreyPoLogo indicates previous selection
-              "<table border=0>\n",
-              "<tr><td align=left>\n",
-              "<img src=$smallgreyPoLogo> = <font size=-2>previously selected in this session</font>\n",
-              "</td></tr>\n",
-              "</table>\n";
-        }
+    &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
 
     print                    # create a table containing all the problems in the exercise
       "<table width=100% border=0>\n";
@@ -111,25 +101,21 @@ sub picktt {
 #	$pretty_arg =~ s/(:\.)|(\.:)/<img align=bottom src=$therefore>/ if $pretty_arg !~ /Too/;
 
         print           # Start a new row, new form
-          $cgi->startform(),
-          "<tr>\n";
+	    "<tr>\n",
+	    $cgi->startform(),
+	    ;
 
         my $logo = $smallPoLogo;
         $logo = $smallgreyPoLogo if (grep {$count == $_} @prev_chosen);
 
-	print           # Print the image button with problem info
-	    "<td valign=\"bottom\" align=\"left\">\n",
+	print        # Print the image button with problem info
+	    "<td valign=\"bottom\" align=\"left\" width=\"30px\">\n",
 	    $cgi->image_button(-name=>'void',-src=>$logo,
 			       -style=>"border: 1px dotted gray;"),"\n",
-	    $cgi->hidden(-name=>'exercise',-value=>$POL::exercise,-override=>1),"\n",
-	    $cgi->hidden(-name=>'action',-value=>"Problem",-override=>1),"\n",
-	    $cgi->hidden(-name=>'argument',-value=>$argument,-override=>1),"\n",
-	    $cgi->hidden('problem_num',-override=>1),"\n",
-	    $cgi->hidden(-name=>'prev_chosen',-value=>[ @prev_chosen ], override=>1),"\n",
 	    "</td>";
 	
 	print           # Print the problem number
-          "<td valign=\"center\" align=\"left\" bgcolor=\"$RIGHTPAGECOLOR\">",
+          "<td valign=\"center\" align=\"left\" bgcolor=\"$RIGHTPAGECOLOR\" width=\"30px\">",
           "<b>$count.</b>",
           "</td>";
 
@@ -140,13 +126,17 @@ sub picktt {
 	    "</tt>\n",
 	    "</td>\n";
 
-        print           # End the row
-          $cgi->endform,
-          "</tr>\n";
+        print           # End the form & row
+	    $cgi->hidden(-name=>'exercise',-value=>$POL::exercise,-override=>1),"\n",
+	    $cgi->hidden(-name=>'action',-value=>"Problem",-override=>1),"\n",
+	    $cgi->hidden(-name=>'argument',-value=>$argument,-override=>1),"\n",
+	    $cgi->hidden('problem_num',-override=>1),"\n",
+	    $cgi->hidden(-name=>'prev_chosen',-value=>[ @prev_chosen ], override=>1),"\n",
+	    $cgi->endform,
+	    "</tr>\n";
     }
 
-    print
-      "</table>\n";
+    print "</table>\n";
 
     &pol_footer;                                              # Close the table started by pol_header
     &end_polpage;                                             # Close the table started by start_polpage
@@ -169,7 +159,8 @@ sub tt_form {
     $cgi->param('prev_chosen',@prev_chosen);
 
     $subtitle = "Exercise $POL::exercise Problem $POL::problem_num\n" if $POL::exercise;
-    $instructions = "<center><strong><font color=$WORKSPACETEXTCOLOR>Complete the truth table!</font></strong></center>"; # unless $answer;
+    $subtitle = "Create your own truth table" unless $subtitle;
+    $instructions = "Complete the truth table!"; # unless $answer;
 
     local $atoms = $tt_template;
     $atoms =~ s/^(.*?)\|.*/$1/s;
@@ -214,15 +205,15 @@ sub tt_form {
 
     print # begin a one column, one row table to contain the truth table template
 	"<center>\n",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>",
 	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('tt'))"),
 	"<table border=0>\n",
 	;
 
     print # The one row contains the truth table template in a textarea
 	"<tr><td align=left>\n",
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
         "<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"tt\" name=\"tt\" rows=$table_length cols=$table_width style=\"font-family: monospace\">",
-	ascii2utf_html($tt_template),
+	ascii2utf_html($tt or $tt_template),
 	"</textarea>",
 	"</td></tr>\n";
     
@@ -317,12 +308,10 @@ sub process_user_argument {
 sub roll_yer_own_tt {
 
     local $subtitle = 	"Create your own truth table",
-    local $instructions = "<center><strong><font color=$WORKSPACETEXTCOLOR>";
-    $instructions .= "Enter an argument in the text area.<br>";
+    local $instructions .= "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">Enter an argument in the text area.</span><br>";
     $instructions .= "Click below to complete a truth table for your argument.<br>";
     $instructions .= "</strong>(Be sure that adjacent premises are separated by a comma<br>";
     $instructions .= "and that a <tt>:.</tt> precedes the conclusion, e.g., <tt>PvQ, ~Q.S :. P</tt>.)</font><br>";
-    $instructions .= "</font></center>";
 
     &start_polpage('Power of Logic: Truth Table exercise');
 
@@ -334,9 +323,11 @@ sub roll_yer_own_tt {
     print
 	"<center>\n",
 	"<p>",
+	#"<div style=\"border: 1px solid green; width: 150px\">",
 	$cgi->textfield(-name=>'user_argument',
 			-style=>'font-family: monospace',
 			-size=>50,-default=>''),
+	#"</div>",
 	"<br>",
 	$cgi->submit(-name=>'action',-value=>'Make the truth table!'),
 	$cgi->endform,

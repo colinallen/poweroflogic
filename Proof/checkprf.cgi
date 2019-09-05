@@ -104,11 +104,11 @@ sub begin {
     $exprob .= " \#$POL::probnum" if $POL::probnum;
 
     my $title = "Proof Checker<br>$exprob";
-
     $title .= " Example" if $POL::usrchc =~ /Example/;
 
+
     &start_polpage;
-    &pol_header("$title");
+    &pol_header($title,$preamble);
     &proofcheckform($proof,$ans);
     &pol_footer;
     &end_polpage;
@@ -158,20 +158,23 @@ sub proofcheckform {
 	"<td align=right valign=top>\n";
 
     print
-	"<p>",
-	"<center>",
-	"<font color=\"$INSTRUCTCOLOR\"><strong>",
-	"Use</font></strong> \$ <font color=\"$INSTRUCTCOLOR\"><strong>",
-	"to represent&nbsp;<img src=\"$existential\"></font></strong>",
-	"</center>"
-	    if $proof =~ /[A-Z][w-z]/;
-
-    print
 	"<strong>$instruction</strong><br>\n",
 	"\n<br>\n",
 	$cgi->hidden(-name=>'annotate',-value=>$annotate),
 	$cgi->submit(-name=>'usrchc',-value=>'Check Proof Now!'),
-	"</td>\n";
+	;
+
+    print
+	"<div style=\"text-align: right; font-size: 13px; font-weight:bold; padding:10px\">",
+	"Use \$ ",
+	"to enter <br>existential quantifier",
+	"<img src=\"$existential\" style=\"height:14px; vertical-align:bottom\">",
+	"</div>"
+	    if $proof =~ /[A-Z][w-z]/;
+
+    print
+	"</td>",
+	"\n";
     
     my $cols = &longest_line_length($POL::answer)+8;
     $cols = 55 if 55 > $cols;   # changed by cm -- area was too small; also rows lengthened to 20 from 15 below
@@ -179,7 +182,7 @@ sub proofcheckform {
     $cgi->delete('answer'); # prevent old value replacing new value
     print # column 2 proof text area
 	"<td align=left>\n",
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>",
 	"<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"answer\" name=\"answer\" rows=20 cols=$cols style=\"font-family: monospace\">",
 	ascii2utf_html($answer),
 	"</textarea>",
@@ -268,12 +271,13 @@ sub check {
     my $score=0;
     foreach (@output) {
 	chomp;
-	my $lop = 1 if /OK|\*\*/;
-	s/ /&nbsp\;/g if $lop;
-	s/&nbsp;\// \//g; # restore tags such as <br />
-	s/OK/<img src="$greentick" border="0">/;
-	s/\*\*/<img src="$redx" border="0">/;
-	print "$_";
+	my $line = $_;
+	my $lop = 1 if $line =~ /OK|\*\*/;
+	$line =~ s/ /&nbsp\;/g if $lop;
+	$line =~ s/&nbsp;\// \//g; # restore tags such as <br />
+	$line =~ s/OK/<img src="$greentick" border="0">/;
+	$line =~ s/\*\*/<img src="$redx" border="0">/;
+	print $line;
 	$score=1 if /congrat/i;
     }
     
@@ -366,28 +370,17 @@ sub pickprf {
 
     # html out
 
-    &start_polpage();
-    &pol_header("Exercise ".$POL::exercise . ": Proofs");
-
     my $instruction = "Pick an argument";
     $instruction = "Click the icon to work on this problem" if $#problems == 0;
+    $instruction = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">$instruction</span>";
+    $instruction .= $PREVCHOICEINSTRUCTION
+	if $POL::prevchosenstring;
     
-    print
-	table({-border=>0},
-	      Tr(td({-align=>'left',-colspan=>2},
-		    $preamble,
-		    "<p>",
-		    "<font color=\"$INSTRUCTCOLOR\">",
-		    strong($instruction),
-		    "</font>",
-		    )),
-	      Tr(td({-align=>'left',-valign=>'middle',-width=>15},
-		    "<img src=\"$smallgreyPoLogo\">"),
-		 td({-align=>'left',-valign=>'middle'},
-		    "<font size=\"-2\">",
-		    "= previously selected during this session",
-		    "</font>")));
+    &start_polpage();
+    &pol_header("Exercise ".$POL::exercise . ": Proofs",
+		$instruction);
 
+    
     print "\n<table style=\"width:680px; table-layout: fixed;\"><!-- begin selection table -->\n";
 
     my $left=1;

@@ -1,10 +1,10 @@
-# Filename: header .pl
+# Filename: header.pl
 
 use CGI qw(:standard :html3 -no_xhtml);
 $cgi = new CGI;
 $cgi->import_names('POL');
 
-push @INC, "/home/www/sites/$site/cgi" if $site;
+#push @INC, "/home/www/sites/$site/cgi" if $site;
 
 if (-f "lib/pol.conf") { # running from upper level
     require "./lib/pol.conf";
@@ -19,7 +19,7 @@ if (-f "lib/pol.conf") { # running from upper level
 @chapternums = sort(keys %chapters);
 
 $program = url();
-if ($program =~ /(\/\de)\//) {
+if ($program =~ /(\/\de\w*)\//) {
     $EDITION = $1;
     $cgibase = "/cgi$EDITION";
 } else {
@@ -39,7 +39,7 @@ $polmenu{'Main Menu'} = "$cgibase/menu.cgi"
 
 $cryptkey='fjkdf43943.';
 
-%pageoutid = cookie('pageout');
+#%pageoutid = cookie('pageout');
 
 #relax wff rules Exercise 9.7 and beyond
 $longjunctions = 1 if $POL::exercise =~ /^9\.[78]/;
@@ -57,65 +57,77 @@ sub start_polpage {
     $title = "Power Of Logic Tutor" if !defined($title);
 
     my $return = $cgi->self_url;
-    
-    if ($cgi->param('student_id')
-	&& $cgi->param('course_id')) { # new authentication
-	$polmenu{'Logout'} = "$cgibase/login.cgi?logout=$return";
-	
-	# make data available globally
-	%pageoutid = ('student_id'=> $cgi->param('student_id'),
-		      'course_id' => $cgi->param('course_id'),
-		      'tool_id' => $cgi->param('tool_id'));
-	
-	# create cookie
-	$pageoutcookie = &create_pageout_cookie($cgi->param('student_id'),
-						$cgi->param('course_id'),
-						$cgi->param('tool_id'));
-	
-	
-    } elsif (%pageoutid) {  # previously authenticated
-	
-	# give logout option
-	$polmenu{'Logout'} = "$cgibase/login.cgi?logout=$return";
-	
-	# refresh cookie
-	$pageoutcookie = &create_pageout_cookie($pageoutid{'student_id'},
-						$pageoutid{'course_id'},
-						$pageoutid{'tool_id'});
-	
-	
-    } else { # no authentication
-	
-	# provide login option
-	#$polmenu{'Login@PageOut'} = "$cgibase/login.cgi?login=$return"
-	#    unless $program =~ /login/;
-	
-	# make sure that cookie is nullified
-	$pageoutcookie = &null_pageout_cookie;
-    }
-    
-    if (!%pageoutid) {
-	$pageoutstatus = 'not logged in';
-    } else {
-	$pageoutstatus = join " ",%pageoutid;
-    }
+
+# COOKIE block
+# no cookies currently required
+#    if ($cgi->param('student_id')
+#	&& $cgi->param('course_id')) { # new authentication
+#	$polmenu{'Logout'} = "$cgibase/login.cgi?logout=$return";
+#	
+#	# make data available globally
+#	%pageoutid = ('student_id'=> $cgi->param('student_id'),
+#		      'course_id' => $cgi->param('course_id'),
+#		      'tool_id' => $cgi->param('tool_id'));
+#	
+#	# create cookie
+#	$pageoutcookie = &create_pageout_cookie($cgi->param('student_id'),
+#						$cgi->param('course_id'),
+#						$cgi->param('tool_id'));
+#	
+#	
+#    } elsif (%pageoutid) {  # previously authenticated
+#	
+#	# give logout option
+#	$polmenu{'Logout'} = "$cgibase/login.cgi?logout=$return";
+#	
+#	# refresh cookie
+#	$pageoutcookie = &create_pageout_cookie($pageoutid{'student_id'},
+#						$pageoutid{'course_id'},
+#						$pageoutid{'tool_id'});
+#	
+#	
+#    } else { # no authentication
+#	
+#	# provide login option
+#	#$polmenu{'Login@PageOut'} = "$cgibase/login.cgi?login=$return"
+#	#    unless $program =~ /login/;
+#	
+#	# make sure that cookie is nullified
+#	$pageoutcookie = &null_pageout_cookie;
+#    }
+#    
+#    if (!%pageoutid) {
+#	$pageoutstatus = 'not logged in';
+#    } else {
+#	$pageoutstatus = join " ",%pageoutid;
+#    }
+
     
     print # beginning of response page
-	header(-cookie=>$pageoutcookie,
+	header(#-cookie=>$pageoutcookie,
 	       -Pragma=>"no-cache",
 	       -charset => 'utf-8'),
 	start_html(#-title=>"$title -- $pageoutstatus",
 		   -title=>"$title",
 		   -author=>'logicpedallers@gmail.com',
 		   -meta=>{'keywords'=>'logic propositional venn predicate',
-			   'copyright'=>'copyright 2002-2012 Logic Pedallers',
+			   'copyright'=>'copyright 2002-2019 Logic Pedallers',
 			   'Content-type'=>'text/html; charset=utf-8'},
 		   -background=>$polbg,
-		   -style=>{'src'=>'/5e/Styles/main.css'},
+		   -style=>{'src'=>'/5e/Styles/main.css'}, ## <<<------UNCHANGED for 6e ??
 		   -bgcolor=>$LEFTPAGECOLOR,
 		   ),
 	;
 
+
+#    print
+#	"<div style=\"background-color:$ALERTBGCOLOR\">",
+#	"<h3 style=\"color:$ALERTTEXTCOLOR\">",
+#	"Please note that we will be offline for a couple of hours for routine maintenance on Saturday December 23, from approximately 10:30 a.m. Eastern (US) time.",
+#	"</h3>",
+#	"</div>",
+#	;
+    
     print # BEGINNING OF TOP LEVEL TABLE (closed in end_polpage)
 	"\n<table width=\"100%\" border=\"0\"><!-- top level table -->\n",
 	"\n<tr><!--The single row within the top level table starts here-->\n",    # Closed in end_polpage
@@ -139,27 +151,27 @@ sub start_polpage {
 # 	 "</div>";
     
     
-    ### ALERT!!! ###
-    if (0 && $pageoutstatus eq 'not logged in' && $program !~ /login/) {
-	print
-	    "<div style=\"color: #000000; background: ivory; font-size: small; padding: 5px; width: 700px\">",
-	    "You are not currently logged in with a <a
-	    href=\"http://www.pageout.net/\">PageOut</a>&reg; student
-	    account. You may continue using this site without being
-	    logged in, but if you are a student with a registered
-	    PageOut&reg; account your work will not be recorded unless
-	    you log in first. If you were previously logged in but your
-	    session has been inactive for an hour, your cookie has
-	    expired and you must go back to your instructor's
-	    PageOut&reg; site and log in again. If your login id is
-	    being dropped immediately after logging in, please read 
-	    <a href=\"$cgibase/help.cgi#LoginProb\">these instructions</a>.",
-	    "</div>\n",
-	    ;
-    }
+#    ### ALERT!!! ###
+#    if (0 && $pageoutstatus eq 'not logged in' && $program !~ /login/) {
+#	print
+#	    "<div style=\"color: #000000; background: ivory; font-size: small; padding: 5px; width: 700px\">",
+#	    "You are not currently logged in with a <a
+#	    href=\"http://www.pageout.net/\">PageOut</a>&reg; student
+#	    account. You may continue using this site without being
+#	    logged in, but if you are a student with a registered
+#	    PageOut&reg; account your work will not be recorded unless
+#	    you log in first. If you were previously logged in but your
+#	    session has been inactive for an hour, your cookie has
+#	    expired and you must go back to your instructor's
+#	    PageOut&reg; site and log in again. If your login id is
+#	    being dropped immediately after logging in, please read 
+#	    <a href=\"$cgibase/help.cgi#LoginProb\">these instructions</a>.",
+#	    "</div>\n",
+#	    ;
+#    }
 
     print # a bit of padding
- 	"<div style=\"margin: 15px;\">",
+ 	"<div style=\"margin: 10px;\">",
 	"</div>",
 	;
 
@@ -179,7 +191,9 @@ sub polmenu {
     my $chapter = $cgi->param('chapter');
     my $title = '';
 
-    my $menuimage = "<img src=\"$cover4e\" alt=\"chess image\" style=\"border: 0px\" height=\"150\">";         # 5e
+    my $menuimage = "<img src=\"$EDITION/$cover6e\" #######<<<==== remove $EDITION/ for 6e release
+                          alt=\"$EDITION cover image\" 
+                          style=\"border: 0px\" width=\"150\">";  # <<<========= NEED 6E UPDATE
 
     if (!defined($chapter)) {
 	if ($file) {
@@ -197,11 +211,12 @@ sub polmenu {
     
     my $chindex = $chapter;
     $chindex = "0$chapter" if $chindex =~ /^\d$/;
-    #$chapterimage = "<img src=\"/Images/PoLogo.2e.gif\" alt=\"diamond logo\" />";
-    $chapterimage = "<div style=\"height: 150px; width: 124px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/Images/pompidou.jpg\" alt=\"image\" style=\"height: 135px; width: 120px; margin-top: 2px\" /></div>";
-    $chapterimage = "<div style=\"height: 150px; width: 124px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/Images/5eCh$chapter.jpg\" alt=\"ch$chapter logo\" style=\"height: 135px; width: 120px; margin-top: 2px\"/></div>"
+    $chapterimage = "<div style=\"height: 200px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/6e/Images/6e-ch$chapter.jpeg\" alt=\"$EDITION ch$chapter logo\" style=\"height: 165px; margin-top: 2px;\"/></div>"
 	if $chapters{$chindex};
 
+    $chapterimage = "<div style=\"height: 200px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/6e/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 165px; margin-top: 2px;\"/></div>"
+	unless $chapterimage;
+    
     #start table
     print
 	"\n\n<table border=\"0\" cellspacing=\"0\" cellpadding=\"2\" width=\"140\">",
@@ -213,7 +228,7 @@ sub polmenu {
 		"<a href=\"$cgibase/menu.cgi\">$menuimage</a>"),
 	     td({-colspan=>2,-align=>'center'},
 		"\n<font color=\"$MENUTEXTCOLOR\">",
-		"\n<strong>POL WEB TUTOR</strong>",
+		"\n<strong>PoL WEB TUTOR</strong>",
 		"\n</font>"),
 	     ]);
 
@@ -239,6 +254,14 @@ sub polmenu {
 	      &grading_status ## will page out be disabled for 5e?
 	      )),
 	"\n</table><!--End Menu Table-->\n";
+    print
+	"<div style=\"padding:5px; font-size:10px; text-align:left\">",
+	"&copy; 2012&ndash;",
+	"<script>document.write(new Date().getFullYear())</script>",
+	" ",
+	"Logic Pedallers and McGraw-Hill",
+	"</div>";
+
 }
 
 sub polmenu_item {
@@ -318,23 +341,34 @@ sub pol_header {
     $width="700px" unless $width;
 
     print  # bounding div to replace table by CA
-	"<div style=\"width: $width; border: 1px solid black; padding: 5px; background: $WORKSPACEBGCOLOR\">", # not closed until footer
-	"<div style=\"height: 154px; background-color: $HEADERBGCOLOR; padding: 2px\"><!--bounding box for header-->",
-	# header content
-	"<div style=\"float: left; padding: 0px 5px 0px 2px\">$chapterimage</div>",
-	"<div style=\"height: 150px; border: 0px solid red; margin: 0px;\">",
-	"<img src=\"$polcsl\" style=\"border: 0px solid green; margin: 0px 0px 0px 0px\" alt=\"\" width=\"550\"/>",
-	"<p style=\"text-align: left; margin: 10px 0px 10px 10px; font-size: 24px; font-weight: bold; color: $MENUTEXTCOLOR\">",
-	$subtitle,
-	"</p>",
-	"</div>",
-	"</div><!--end bounding box for header-->",
+	"<div style=\"width: $width; border: 2px solid yellow; padding: 5px; background: $WORKSPACEBGCOLOR\">\n", # not closed until footer
+	## infobox
+	"<div style=\"height: 178px; background-color: $HEADERBGCOLOR; padding: 5px; border: 0px solid black\"><!--bounding box for header-->\n",
 
-	"<hr />",
 
-	# print the instructions
-	#"<div style=\"border: 2px solid red; margin: 0px;\">$instructions</div>\n", 
-	$instructions,
+	# header content	
+	"<div style=\"height: 165px; border: 0px solid $PAGEBGCOLOR; margin: 0px;\"><!--  -->\n",
+	#images at top
+	## CHAPTER SPECIFIC IMAGE
+	"<div style=\"float: left; padding: 0px 10px 0px 0px\">$chapterimage</div>\n",
+	"<img src=\"$polcsl\" style=\"border: 0px solid green; margin: 0px 0px 0px 0px\" alt=\"$EDITION book banner\" width=\"450px\"/>\n",
+
+	###text
+	"<div style=\"height: 138px; text-align: left; padding: 2px; margin: 0px 0px 0px 0px; font-weight: bold; color: $MENUTEXTCOLOR; border: 0px solid black\"><!--textbox-->\n",
+	"<span style=\"font-size: 24px;line-height: 1.5em\">$subtitle</span>\n",
+	"<br />\n",
+	"<span style=\"font-size: 14px; font-weight: normal; color: $INSTRUCTCOLOR\">$instructions</span>\n",
+	"</div><!--end textbox-->\n", # for title and subtitle
+
+	#image at bottom
+	"<img src=\"$polcsl\" style=\"border: 0px solid green; margin: 0px 0px 0px 0px\" alt=\"$EDITION book banner\" width=\"450\"/>\n",
+	"</div>\n", # close inner div
+	###
+	
+	"</div><!--end bounding box for header-->\n",
+	## end infobox
+	"<br />",
+	#"<hr />",
 	;
 }
 
@@ -349,7 +383,9 @@ sub pol_footer { # canonical name of bookend for pol_header
 sub footer { # old function name - remove after retrofit
     print                                  # end of pol_header table
 	"</div><!-- end workspace div -->\n";
+
     #"</table><!-- end workspace table contained within workplace cell -->\n";
+
 }
 
 ###
@@ -373,7 +409,7 @@ sub end_polpage { # bookend for start_polpage
 
 sub bye_bye {
     my $debug=0;
-    my $debug=1 if ((url() !~ /poweroflogic/) || $POL::debug);
+    my $debug=1 if ((url() =~ /beta/) || $POL::debug);
 
     print
 	"\n</td><!--End of workspace cell-->",
@@ -469,3 +505,13 @@ sub chapter_menu_button {
      );
 }
 
+sub html_error { # dirty exit
+    my ($err_msg) = @_;
+    print
+	header(),
+	start_html(-title=>'Error'),
+	$err_msg,
+	$cgi->Dump,
+	end_html;
+    &bye_bye;
+}

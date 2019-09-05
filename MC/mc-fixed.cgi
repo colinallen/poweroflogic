@@ -20,12 +20,17 @@ require '../MC/mc-common.pl';
 $program  = $cgi->url;
 $fullprog  = $cgi->self_url;
 
+if (!$POL::exercise) {
+    &cant_be_done;
+}
+
 @questions;
 @prev_chosen = ();
 push (@prev_chosen, @POL::prev_chosen) if ($POL::prev_chosen[0]); # for some reason, length of @prev_chosen = 1 
                                                                   # (even though the list itself appears empty when printed)
                                                                   # if @POL::prev_chosen is empty, so can't use
                                                                   # (@POL::prev_chosen) as test
+
 ####################################################
 # ADD LOCAL MENU ITEMS HERE
 # $polmenu{"Main Menu"} = "../menu.cgi";
@@ -33,10 +38,13 @@ push (@prev_chosen, @POL::prev_chosen) if ($POL::prev_chosen[0]); # for some rea
 ($chapter,$exnum)=split(/\./,$POL::exercise,2);
 $polmenu{"More from Ch. $chapter"} = "../menu.cgi?chapter=$chapter"
     if $POL::exercise;
+    
+    my $subtitle = "Exercise $exercise";
+
 
 if (@prev_chosen and $POL::action =~ /Check/) {
     my $prev_chosen_string = '&prev_chosen='.join('&prev_chosen=',@prev_chosen) 
-      if @prev_chosen < $POL::total_questions;
+	if @prev_chosen < $POL::total_questions;
     if ($POL::user_option =~/random/) {
         $polmenu{"More from Ex. $POL::exercise"} = "$program?exercise=$POL::exercise&action=More$prev_chosen_string";
     } else {
@@ -63,23 +71,22 @@ for ($POL::action) {
 	last;
     };
     /Check/ and do
-      { (&check_answers($POL::user_option,$POL::exercise,$POL::total_questions,$POL::rlqz,,@POL::probnums) and &bye_bye) };
-
+    { (&check_answers($POL::user_option,$POL::exercise,$POL::total_questions,$POL::rlqz,,@POL::probnums) and &bye_bye) };
+    
     /All/ and do
-      { (&generate_full_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
-      
+    { (&generate_full_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
+    
     /More|Random/ and do
-      { (&generate_random_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
-
+    { (&generate_random_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
+    
     /Generate/ and do
-      { (&generate_user_choice_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
+    { (&generate_user_choice_MC_quiz($POL::probfile,$POL::exercise) and &bye_bye) };
     
     /Choose|User/ and do
-      { (&pick_probs($POL::probfile,$POL::exercise) and &bye_bye) };
-#      { (&pick_probs($POL::exercise,@POL::prev_chosen) and &bye_bye) };
-
+    { (&pick_probs($POL::probfile,$POL::exercise) and &bye_bye) };
+    
     &choose_quiz_type($POL::probfile,$POL::exercise);
-
+    
 }
     
 &bye_bye;
@@ -127,13 +134,17 @@ sub generate_random_MC_quiz {
     
 ### Print out the form ###
 
-    local $subtitle = "Exercise $POL::exercise: Multiple Choice";
+    my $subtitle = "Exercise $POL::exercise: Multiple Choice";
     $subtitle = "Exercise $POL::exercise: True/False" if $values =~ /True::False/;
 
-    local $instructions = "";
+    #local $instructions = "";
+    local $instructions = $preamble;
     
     &start_polpage();
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
+    print "<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
+
+
 
 # DEBUG
 #     print "\$probfile: $probfile<br>";
@@ -144,11 +155,6 @@ sub generate_random_MC_quiz {
 ### Generate the quiz
 
     print
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n",
 	$cgi->startform(), 
 	;
 
@@ -161,11 +167,10 @@ sub generate_random_MC_quiz {
     for(@random_probnums){
 	$j++;
 	$rlqz.="$questions[$_-1]$qsep";
-#        $random_probnums .= "$i ";
 	($ques,$err,$ans)=split($sep,$questions[$_-1],3);
 	$qnum=$j;
 	$rlqz =~ s/ /+/g;
-	&random_MC_answer_form;
+	&random_MC_answer_form($ques);
     }
 
     print 
@@ -182,7 +187,7 @@ sub generate_random_MC_quiz {
       $cgi->hidden('rlqz',&rot($rlqz)),
       $cgi->hidden('probnums'),
       $cgi->hidden('logstuff',$logstuff),
-      $cgi->hidden('subtitle',$subtitle),
+      $cgi->hidden('subtitle',$subt),
       $cgi->hidden('exercise',$exercise),
       $cgi->hidden('prev_chosen'),
       $cgi->hidden('total_questions',$total_questions),
@@ -213,11 +218,13 @@ sub random_MC_answer_form {
 	my $form = $1;
 	$form =~ s/&gt;/>/g;
 	$form =~ s/&lt;/</g;
-	$uques = "<tt>".ascii2utf_html($form)."</tt>";
+	$uques = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span";
+    } else {
+	#$uques = ascii2utf_html($uques);
     }
     
     print 
-	"<tr><td align=left valign=top>\n",
+	"<tr><td style=\"text-align:left; vertical-align: top\">\n",
 	$cgi->popup_menu(-name=>"ans_$qnum",
 			 -values=>\@values,
 			 -size=>1,
@@ -238,7 +245,6 @@ sub generate_user_choice_MC_quiz {
 
     my ($probfile,$exercise) = @_;
 
-    my $subtitle = "Exercise $exercise";
     my $user_option = 'user_choice';
     my @probnums;
 
@@ -269,20 +275,15 @@ sub generate_user_choice_MC_quiz {
     }
     
     &pick_probs($probfile,$exercise) if not @probnums;
+    $subtitle .= $POL::exercise;
 
     &start_polpage('Here\'s Your Quiz!');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
+    print "<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
 
-#    print "\$probfile: $probfile<br>";
-
-    print
-      "<table border=0>\n",
-      "<tr><td align=left>\n",
-      $preamble,
-      "</td></tr>\n",
-      "</table>\n";
+    &pol_header($subtitle,$preamble);  # create outer table, print the PoL header and instructions
 
     print
+	"<div style=\"clear: both;\"></div>",
 	$cgi->startform(),
 	"<table border=0>\n";
     
@@ -306,12 +307,9 @@ sub generate_user_choice_MC_quiz {
         $rlqz .= "$questions[$i-1]$qsep";               # We use "$questions[$i-1]" cuz arrays are indexed from 0 
         ++$quiz_qnum;
  	($ques,$err,$ans)=split($sep,$questions[$i-1],3);
+	
 	&user_choice_MC_answer_form($ques,$quiz_qnum);
     }
-
-# Debug
-#    my $bar = join(',',@prev_chosen);
-#    print "\$bar: $bar<br>";
 
     print 
 	"</table>\n";
@@ -332,7 +330,9 @@ sub generate_user_choice_MC_quiz {
       $cgi->hidden('probfile'),
       $cgi->hidden('logstuff',$logstuff),
       $cgi->submit(-name=>'action',-value=>'Check answers!'),
-      $cgi->end_form;
+      $cgi->end_form,
+      "</div>", #end of form
+      ;
     
     &pol_footer;                                              # Close the table started by pol_header
     &end_polpage;                                             # Close the table started by start_polpage
@@ -347,16 +347,28 @@ sub user_choice_MC_answer_form {
     my ($ques,$quiz_qnum) = @_;
     my @values = split($sep,$values);
     push(@values,'?');
+
+    my $uques = $ques; 
+
+    # here we recode ascii version of logical symbols as utf
+    if ($uques =~ /^<tt>(.*)<\/tt>$/) {
+	my $form = $1;
+	$form =~ s/&gt;/>/g;
+	$form =~ s/&lt;/</g;
+	$uques = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span>";
+    } else {
+	#$uques = ascii2utf_html($uques);
+    }
+
     
     print 
-	"<tr><td align=left valign=top>\n",
+	"<tr><td style=\"text-align:left; vertical-align: top\">\n",
 	$cgi->popup_menu(-name=>"ans_$quiz_qnum",
 			 -values=>\@values,
 			 -size=>1,
 			 -default=>'?'),
 	"</td>\n",
-	"<td align=left>\n",
-	"$quiz_qnum.&nbsp;&nbsp;$ques</td>\n",
+	"<td align=left>$quiz_qnum.&nbsp;&nbsp;$uques</td>\n",
 	"</tr>\n";
 }
 
@@ -368,8 +380,8 @@ sub check_answers {
     local ($user_option,$exercise,$total_questions,$rlqz,@probnums) = @_;
     local $i=0;
     local $nextq;
-    local $subtitle = "Evaluation of your answers from Section&nbsp;$exercise";
-    local $instructions = "";
+    my $subtitle = "Evaluation of your answers from Section&nbsp;$exercise";
+    local $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">The Logic Tutor responds...</span>";
     local $logstuff = "$POL::logstuff\n\n";
     local $mailto = 'random';
 
@@ -379,14 +391,13 @@ sub check_answers {
 ### Print out PoL logo and header
 
     &start_polpage('Evaluation of your quiz');
+    print "<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
 
     &pol_header($subtitle,$instructions);
 
     print
 	"<table>\n",  # put it all inside a one-cell table
-	# startform(),  # THIS SEEMS NOT TO BELONG HERE - CA - see line 449x
 	"<tr><td align=left>\n",
-	h2("The Logic Tutor responds:"), 
 	"<dl>\n";
 
     my $probnum;
@@ -406,7 +417,9 @@ sub check_answers {
 	    my $form = $1;
 	    $form =~ s/&gt;/>/g;
 	    $form =~ s/&lt;/</g;
-	    $uques = "<tt>".ascii2utf_html($form)."</tt>";
+	    $uques = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span>";
+	} else {
+	    #$uques =ascii2utf_html($uques);
 	}
     
 
@@ -435,7 +448,7 @@ sub check_answers {
 	    print
               "<dd>",
               "<img src=$greentick>&nbsp;",
-              "<em>Your answer of </em>``$rawguess\'\'<em> is correct!</em><dd>&nbsp;",
+              "<em>Your answer of </em>&ldquo;$rawguess&rdquo;<em> is correct!</em><dd>&nbsp;",
               ;
             push @probs_attempted, $probnum;
             push @student_answers, "1";
@@ -446,7 +459,7 @@ sub check_answers {
 	    print 
               "<dd>",
               "<img src=$redx>&nbsp;",
-              "<em>Your answer of </em>``$rawguess\'\'<em> is incorrect.</em><p>",
+              "<em>Your answer of </em>&ldquo;$rawguess&rdquo;<em> is incorrect.</em><p>",
               ;
             push @probs_attempted, $probnum;
             push @student_answers, "0";
@@ -557,12 +570,15 @@ sub generate_full_MC_quiz {
     
 ### Print out the form ###
 
-    local $subtitle = "Exercise $POL::exercise: Multiple Choice";
+    my $subtitle = "Exercise $POL::exercise: Multiple Choice";
     $subtitle = "Exercise $POL::exercise: True/False" if $values =~ /True::False/;
 
-    local $instructions = "";
-    
+    #local $instructions = "";
+    local $instructions = $preamble;
+
     &start_polpage();
+    print "<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
+
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
 
 # DEBUG
@@ -572,13 +588,7 @@ sub generate_full_MC_quiz {
 # END DEBUG
 
 ### Generate the quiz
-
     print
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n",
 	$cgi->startform(), 
 	;
 

@@ -120,17 +120,6 @@ sub prettify_argument {
     return $arg;
 }
 
-###
-sub html_error { # dirty exit
-    my ($err_msg) = @_;
-    print
-	header(),
-	start_html(-title=>'Error'),
-	$err_msg,
-	$cgi->Dump,
-	end_html;
-    &bye_bye;
-}
 
 sub pred2prop {
     my ($arg,@scheme) = @_;

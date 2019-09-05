@@ -31,6 +31,19 @@ if ($POL::exercise) { # add menu items
     $polmenu{"More from Ch. $chapter"} = "../menu.cgi?chapter=$chapter";
     $polmenu{"More from Ex. $POL::exercise"} = "$program?exercise=$POL::exercise&prevchosenstring=$prevchosen_string&msfu=".rand
 	if $POL::argument or $POL::probnum;
+} else {
+    local $subtitle = 	"Finite Universe Models";
+    local $instructions = "<center><strong>This feature is not supported for Finite Universe models. Please return to the Main Menu and make your selection from there. </strong></center>";
+
+    &start_polpage;
+    print
+	$cgi->startform();
+
+    &pol_header($subtitle,$instructions);
+
+    &footer();
+
+    &bye_bye();
 }
 
 for ($POL::usrchc) {
@@ -63,22 +76,11 @@ sub pick_arg {
     close(FILE);
     
     &start_polpage('Choose an argument');
+
+    $instructions .= $PREVCHOICEINSTRUCTION if @POL::prevchosen;
+    
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
     
-    print
-	table({-border=>0},
-	      Tr(td({-align=>'left',-colspan=>2},
-		    "<font color=$LEFTPAGECOLOR>",
-		    strong("Pick an argument"),
-		    "</font>",
-		    )),
-	      Tr(td({-align=>'left',-valign=>'middle'},
-		    "<img src=\"$smallgreyPoLogo\">"),
-		 td({-align=>'left',-valign=>'middle'},
-		    "<font size=\"-2\">",
-		    "= previously selected during this session",
-		    "</font>")));
-
     print              # create a table containing all the problems in the exercise
 	"<table width=\"100%\" border=0><!-- argument selection table -->\n";
     
@@ -180,7 +182,7 @@ sub expansions_form {
 	}
 	$onsubmit .= "return true;\n";
     push @form, ("<center>",
-	     "<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	     "<script language=\"javascript\" type=\"text/javascript\" src=\"/5e/javascript/replace.js\" charset=\"UTF-8\"></script>",
 		 "<script language=\"javascript\" type=\"text/javascript\" charset=\"UTF-8\">\nfunction fixInput() {\n $onsubmit }</script>",
 		 $cgi->startform(
 		 		-onsubmit=>'fixInput()'

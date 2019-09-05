@@ -185,7 +185,7 @@ sub valid_or_invalid {
     # print "<h3>rows after cleanup = ".@tt."</h3>";
     local $subtitle = "Exercise $probref\n" if $probref;
 
-    &pol_header($subtitle) if not $flag;                              # table 1 -- outer table
+    &pol_header($subtitle) if not $flag;             # table 1 -- outer table
 
     print  # Announce the point (more loudly now than $instructions in &pol_header)
 
@@ -196,7 +196,7 @@ sub valid_or_invalid {
 
     print  # instructions -- looks best if put inside its own table
 	"<center>",
-	"<table cellpadding=5 border=0 cellspacing=0 width=100%>\n",               # table 2 -- instructions
+	"<table cellpadding=5 border=0 cellspacing=0 width=\"100%\">\n",               # table 2 -- instructions
 	"<tr><td>",
 	"Your truth table is correct.  Now, using the truth table, ",
 	"determine whether or not the argument is valid.  If it is, ",
@@ -248,7 +248,7 @@ sub valid_or_invalid {
 	"<td><br></td>\n",
 	"<td><tt>",
 	$dashes,
-	"</td></tt>\n";
+	"</tt></td>\n",
 	"</tr>\n";
 
 # The next block of code prints the remaining rows of the
@@ -398,9 +398,8 @@ sub check_form_of_tt {
     $user_arg =~ s/^(.*?)--.*/$1/s;
     $user_arg =~ s/^.*\|(.*)/$1/;
     $user_arg =~ s/\s//g;
-    $user_arg = &prettify($user_arg);
-    $user_arg =~ s/\s//g;
     #print "USER_ARG: $user_arg<br>";
+
     local $prob_arg = $pretty_seq;
     $prob_arg =~ s/\s//g;
     #print "PROB_ARG: $prob_arg<br>";

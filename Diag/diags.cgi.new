@@ -4,6 +4,20 @@ require '../lib/header.pl';
 
 $mailto='random';
 
+$GENERAL_INSTRUCTIONS = <<END;
+<font size=-1 color=$INSTRUCTCOLOR><strong>INSTRUCTIONS</strong></font>
+<font size=-1>
+Use small (tab) buttons in argument diagram table below to expand rows to left and right.
+In table cells, enter numbers (for statements), enter <tt>v</tt> between
+<em>in</em>dependent supports, and <tt>+</tt> between <em>inter</em>dependent)
+supports. Remove a cell by clicking in with mouse and deleting all its
+contents (<em>including</em> invisible elements).  Use $redrawlabel button
+to see the effects of changes.
+</font>
+END
+
+
+
 #$tab          = chr(32);
 $tab          = ".";
 $qtab         = quotemeta($tab);
@@ -48,10 +62,28 @@ if ($POL::prob) {
 }
 ### end menu additions
 
-&start_polpage('Argument Diagrams');
+if ($POL::usrchc =~ /Check|Redraw/i) {
+    $instructions = $GENERAL_INSTRUCTIONS;
+} elsif ($POL::prob) {
+    $instructions = "If you believe this passage does not contain an argument, click the \"Not an argument\" button below. Otherwise place square brackets around the individual statements in this argument.",
 
-$instructions = "Pick an argument to diagram<br>\n".$PREVCHOICEINSTRUCTION
-    unless $POL::prob;
+} else {
+    $instructions = table({-border=>0},
+			  Tr(td({-align=>'left',-colspan=>2},
+				"<font color=$INSTRUCTCOLOR>",
+				strong("Pick an argument to diagram"),
+				"</font>",
+			     )),
+			  Tr(td({-align=>'left',-valign=>'middle'},
+				"<img src=\"$smallgreyPoLogo\">"),
+			     td({-align=>'left',-valign=>'middle'},
+				"<font size=\"-2\">",
+				"= previously selected during this session",
+				"</font>")))
+}
+
+&start_polpage('Argument Diagrams');
+&pol_header("Exercise $POL::exercise, Argument Diagrams",$instructions);
 
 &get_out if $cgi->user_agent  =~ /msie[^\d]*[1-3]/i;
 
@@ -114,7 +146,6 @@ sub pickprob {
     close(FILE);
     
     # html out
-    &pol_header("Exercise $POL::exercise, Argument Diagrams",$instructions);
 
     print
 	"<table width=\"100%\" border=0>";
@@ -164,16 +195,11 @@ sub pickprob {
 
 ###
 sub bracket {
-    my $msg = @_[0];
     my $arg = $argument;
     $arg =~ s/[\[\]]//g;
 
     my $numrows = int(length($argument)/58)+2;
 
-    $instructions = "If you believe this passage does not contain an argument, click the \"Not an argument\" button below. Otherwise place square brackets around the individual statements in this argument.";
-
-    &pol_header("Exercise $POL::exercise, Argument Diagrams",$instructions);
-    print $msg;
     print
 	$cgi->startform,
 	"<center>",
@@ -204,45 +230,66 @@ sub bracket {
 
 sub check_arg {
     if ($answer eq 'tnemugra na toN') { # backwards
-	$instructions = "";
-	&pol_header("Exercise $POL::exercise, Argument Diagrams",$instructions);
-	print $cgi->center("<b>You correctly reported this as not argument.</b>");
-	print "<div style=\"color: gray\">$POL::brackguess</a></div>";
+	print "Correct!";
 	$cgi->delete('prob');
 
 	print
 	    "<hr>\n",
 	    $cgi->startform,
-	    $cgi->center($cgi->submit(-name=>'act',-value=>"Another from $POL::exercise?")),
+	    $cgi->submit(-name=>'act',-value=>"Another from $POL::exercise?"),
+	    "</center>\n",
 	    $cgi->hidden('exercise'),
 	    $cgi->hidden('prevchosen'),
 	    $cgi->endform;
 
+
+	my %pageoutdata = %pageoutid;
+	if (%pageoutdata) {
+	    $pageoutdata{'vendor_assign_id'} = $POL::exercise;
+	    $pageoutdata{'assign_probs'} = [ $POL::probnum ];
+	    $pageoutdata{'student_score'} = [ $score ];
+	    &send_to_pageout(%pageoutdata);
+	}
 	&pol_footer;
 	&end_polpage;
 
     } else {
-	&bracket("<div style=\"text-align: center; color=$INSTRUCTCOLOR\">Wrong answer. Try again.</div>");
+	print "<font color=\"$INSTRUCTCOLOR\">Wrong answer.  Try again.</font>";
+	&bracket;
     }
 }
 
 sub check_brackets {
-    my $match = &fuzzy_match($POL::brackguess,$argument);
-    $instructions = "" if $match;
-
-    #&pol_header("Exercise $POL::exercise, Argument Diagrams",$instructions);
     if (($POL::brackguess !~ /\[/)
 	|| ($POL::brackguess !~ /\]/)) {
-	&bracket("<div style=\"text-align: center; color=$INSTRUCTCOLOR\">Wrong answer. You did not insert a set of brackets. Try again.</div>");
+	print "<font color=\"$INSTRUCTCOLOR\">Wrong answer. You did not insert a set of brackets.  Try again.</font>";
+	&bracket;
 	exit;
 	
     }
+    my $match = &fuzzy_match($POL::brackguess,$argument);
     if ($match !~ /\d/) {
-#	&mailit($mailto,
-#		"$POL::brackguess\ncompared to\n$argument\nyielded\n$match")
-#	    if $mailto;
+	print
+	    "<table border=\"0\" cellspacing=\"2\" width=\"100%\">",
+	    "<tr><td valign=\"top\" width=\"50%\">",
+	    "<strong>",
+	    "Your placement of brackets was...<br>",
+	    "</strong>",
+	    $POL::brackguess,
+	    "</td><td valign=\"top\" width=\"50%\">",
+	    "<strong>",
+	    "...$match to the official answer:<br>",
+	    "</strong>",
+	    $argument,
+	    "</td></tr></table>\n",
+	    "<hr>",
+	    ;
 
-	&display_argument($match,@userdiag);
+	&mailit($mailto,
+		"$POL::brackguess\ncompared to\n$argument\nyielded\n$match")
+	    if $mailto;
+
+	&display_argument(@userdiag);
     } else {
 	my $numbracksguess = ($POL::brackguess =~ s/\[/\[/g);
 	my $numbracksans = ($argument =~ s/\[/\[/g);
@@ -254,14 +301,20 @@ sub check_brackets {
 	    if $numbracksguess < $numbracksans;
 	$errmsg .= " You have misplaced the number $match pair of brackets. "
 	    if $match > 0;
+	print
+	    "<p>",
+	    "<font color=\"maroon\">\n",
+	    "<strong>\n",
+	    "$errmsg Try again!\n",
+	    "</strong>\n",
+	    "</font>",
+	    "<br>";
 
-#	&mailit($mailto,
-#		"$POL::brackguess\ncompared to\n$argument\nyielded\n$errmsg")
-#	    if $mailto;
+	&mailit($mailto,
+		"$POL::brackguess\ncompared to\n$argument\nyielded\n$errmsg")
+	    if $mailto;
 
-	$errmsg .= "<br>Try again!";
-
-	&bracket("<center>$errmsg</center>");
+	&bracket;
     }
 }
 
@@ -343,33 +396,16 @@ sub add_row {
 ###
 sub display_argument {
     local $clean = shift(@_) if @_[0] =~ /clean/i;
-    local $match = shift(@_) if @_[0] =~ /close|identical/i;
 
-    $conclusion_ok = &is_conclusion_ok(&get_conclusion($reverse_userdiag),
-				       $answer);
-    
-    $instructions = "<strong>INSTRUCTIONS</strong> Use small (tab) buttons in table below to expand rows to left and right. In table cells, enter numbers (for statements), enter <tt>v</tt> between <em>in</em>dependent supports, and <tt>+</tt> between <em>inter</em> dependent) supports. Remove a cell by clicking in with mouse and deleting all its contents (<em>including</em> invisible elements). Use <u>$redrawlabel</u> button to see the effects of changes."
-	unless $clean;
+    $conclusion_ok =
+	&is_conclusion_ok(&get_conclusion($reverse_userdiag),$answer);
 
-    &pol_header("Exercise $POL::exercise, Argument Diagrams",
-		$instructions);
-
-    if ($POL::usrchc =~ /Check Brackets/) { # then we just arrived
-	print
-	    "<table border=\"0\" cellspacing=\"2\" width=\"100%\">",
-	    "<tr><td valign=\"top\" width=\"50%\">",
-	    "<strong>",
-	    "Your placement of brackets was...<br>",
-	    "</strong>",
-	    $POL::brackguess,
-	    "</td><td valign=\"top\" width=\"50%\">",
-	    "<strong>",
-	    "...$match to the official answer:<br>",
-	    "</strong>",
-	    $argument,
-	    "</td></tr></table>\n",
-	    "<hr>",
-	    ;
+    if (0) { #debug
+	print "answer: $answer<br>"; # debug
+	my $revdiag = $reverse_userdiag;
+	$revdiag =~ s/\s/>/g;
+	print "structure displayed is $revdiag<br>"; #debug
+	print "conclusion is ", &get_conclusion($reverse_userdiag); #debug
     }
 
     print
@@ -378,15 +414,13 @@ sub display_argument {
 	"<tr><td valign=\"top\">",
 	;
 
-    print "<div style=\"color: $INSTRUCTCOLOR\">$msg</div>\n";
-
     print
-	strong("Diagram the argument with statements numbered as shown"),
-	"<br>"
-	unless $clean;
+	"<strong>",
+	"Diagram the argument with statements numbered as shown:<br> ",
+	"</strong>\n"
+	    unless $clean;
 
-    &display_english('abridged') # show the english argument
-	unless $clean;
+    &display_english('abridged') unless $clean; # show the english argument
 
     print "</td><td valign=\"top\">";
 
@@ -394,27 +428,18 @@ sub display_argument {
 	$cgi->startform,
 	$cgi->hidden('probnum'),
 	$cgi->hidden('prevchosen'),
-	unless $clean;
+	"\n<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" align=\"center\">",
+	"<!--diagram table-->\n",
+	unless clean;
 
-    my $border = "0px solid black";
-    $border = "2px solid black" if $clean;
     print
-	"\n",
-	"<!--begin diagram table-->\n",
-	"<table -style=\"border: $border; ",
-	"  cellspacing: 0px; ",
-	"  cellpadding: 2px; ",
-	"  align: center;\"",
-	">",
-	;
-	
-    print
-	Tr(td({-colspan=>20, -bgcolor=>$DIAGBGCOLOR, -align=>'center'},
-	      $cgi->submit(-name=>usrchc,-value=>$uplabel),
-	      #$cgi->submit(-name=>usrchc,-value=>$downlabel),
-	   ))
-	unless $clean;
+	"<tr><td colspan=\"20\" bgcolor=\"$RIGHTPAGECOLOR\" align=\"center\">",
+	$cgi->submit(-name=>usrchc,-value=>$uplabel),
+#	$cgi->submit(-name=>usrchc,-value=>$downlabel),
+	"</td></tr>"
+	unless clean;
 
+    
     my $row1; my $row2;
     my $prev; local @prevcolorrow; local @colorrow;
     my $count = 0; my $rowcount = 0;
@@ -423,17 +448,18 @@ sub display_argument {
     my $loopcount = 0;
     for (@userdiag) {
 	++$loopcount;
-	
 #	next if /^\s*$/;
+#	print "processing $_<br>";
 	$deletingrow = 1 and next if /$delrow/;
 	if ($deletingrow) {
+#	    print "deleting $_<br>";
 	    $deletingrow = 0 if /$newln/;
 	    next;
 	}
 
 	if (/$newln/) { # end of line
 	    next if $prev eq $newln; # skip blank line
-	    #&output_colorrow($row0,$count) unless $rowcount == 0;
+	    &output_colorrow($row0,$count) unless $rowcount == 0;
 	    &output_workrow($row1,$count);
 	    &output_colorrow($row2,$count) unless $loopcount > $#struc;
 
@@ -447,7 +473,6 @@ sub display_argument {
 	} elsif (/([$qtab$ind$IND$dep])(.+)/ or /(.+)([$qtab$ind$IND$dep])/) {
 	    my $first = $1;
 	    my $second = $2;
-
 	    $row0 .= &bridgecell($first,$count);
 	    $row0 .= &bridgecell($second,$count+1);
 	    $row1 .= &makebox($first);
@@ -471,14 +496,13 @@ sub display_argument {
 
     print
 	"<tr>",
-	"<td colspan=\"20\" bgcolor=\"$DIAGBGCOLOR\" align=\"center\">",
+	"<td colspan=\"20\" bgcolor=\"$RIGHTPAGECOLOR\" align=\"center\">",
 	$cgi->submit(-name=>usrchc,-value=>$redrawlabel),
 	$cgi->submit(-name=>usrchc,-value=>$checklabel),
 	"</td></tr>"
 	    unless $clean;
 
     print "</table><!--end diagram table-->";
-
     print
 	"</td></tr>",
 	"</table><!--end containing table-->",
@@ -501,7 +525,7 @@ sub makebox {
     my ($contents) = @_;
     my $result;
     $result .= "\n<td align=center";
-    $result .= " bgcolor=$DIAGFGCOLOR" if $contents =~ /[1-9$dep]/i;
+    $result .= " bgcolor=$DIAGCOLORFG" if $contents =~ /[1-9$dep]/i;
     $result .= " bgcolor=#aaaaaa" if $contents =~ /[$IND$ind]/i;
     #$result .= " style=\"border-bottom: dotted $RIGHTPAGECOLOR 1px\"";
     $result .= ">\n";
@@ -522,10 +546,11 @@ sub makebox {
 sub plaincell {
     my ($contents) = @_;
     my $result;
-    my $bgcolor = "black";
-    $bgcolor = $DIAGBGCOLOR if $contents =~ /[1-9$ind$IND$dep]/;
-    $result = td({-align=>"center",-bgcolor=>$bgcolor},
-		 "&nbsp;");
+    $result .= "\n<td align=\"center\"";
+    $result .= " bgcolor=\"$DIAGCOLORBG\"" if $contents =~ /[1-9$ind$IND$dep]/;
+    $result .= ">\n";
+    $result .= "&nbsp";
+    $result .= "\n</td>\n";
 
     push @colorrow, 1 if $contents =~ /[1-9$ind$IND$dep]/;
     push @colorrow, 0 if $contents !~ /[1-9$ind$IND$dep]/;
@@ -537,9 +562,8 @@ sub plaincell {
 sub bridgecell {
     my ($contents,$count) = @_;
     my $result;
-    my $bgcolor = $DIAGFGCOLOR;
     $result .= "\n<td align=center";
-    $result .= " bgcolor=\"$bgcolor\"" if $contents =~ /[1-9]/ and @prevcolorrow[$count];
+    $result .= " bgcolor=\"$DIAGCOLORFG\"" if $contents =~ /[1-9]/ and @prevcolorrow[$count];
     $result .= ">\n";
     $result .= "&nbsp";
     $result .= "\n</td>\n";
@@ -549,15 +573,21 @@ sub bridgecell {
 ###
 sub output_colorrow {
     my ($row,$count) = @_;
-    my $colspan = 18-$count;
     print "<tr>";
-    print td({-bgcolor=>$RIGHTPAGECOLOR},
-	     "&nbsp;")
-	unless $clean;	
-    print $row;
-    print td({-colspan=>$colspan},"&nbsp;") unless $clean;
-    print td({-bgcolor=>$RIGHTPAGECOLOR},"&nbsp;")
+    print
+	"<td bgcolor=\"$DIAGBGCOLOR\">&nbsp;</td>"
 	unless $clean;
+
+
+    print $row;
+
+    print
+	"\n<td colspan=\"",18-$count,"\"></td>\n",
+	"<td bgcolor=\"$DIAGBGCOLOR\">&nbsp;</td>"
+	unless $clean;
+
+    
+    print "</tr>";
 }
 
 ###
@@ -569,7 +599,7 @@ sub output_workrow {
 	$cgi->submit(-name=>elements,-value=>$delrow),
 	$cgi->submit(-name=>elements,-value=>$tab),
 	"</td>"
-	unless $clean;
+	    unless $clean;
 
     print $row;
 
@@ -578,9 +608,10 @@ sub output_workrow {
 	"\n<td bgcolor=\"$RIGHTPAGECOLOR\" valign=\"bottom\" align=\"left\">",
 	$cgi->submit(-name=>elements,-value=>$tab),
 	"</td>\n",
-	td($cgi->hidden(-name=>elements,-value=>$newln)),
-	unless $clean;
-    
+	"<td>",
+	$cgi->hidden(-name=>elements,-value=>$newln),
+	"</td>\n"
+	    unless $clean;
     print
 	"</tr>\n";
 }
@@ -618,24 +649,21 @@ sub display_english {
     }
     
     print "</font>" if $fontsize;
-    print "<br>(<em>See below for unabridged argument.</em>)" if $abridged;
+
+    print " <br>(<em>See further below for unabridged argument.</em>)" if $abridged;
 
     print
-	"<br>",
-	"<font color=$INSTRUCTCOLOR>",
-	"<strong>",
+	"<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\"> ",
 	"What is the main conclusion? ",
 	"Enter it on the bottom row of your diagram.",
-	"</strong>",
-	"</font>"
-	    unless $conclusion_ok or !$abridged;
+	"</span>",
+	    unless $conclusion_ok;
 	
     print "<br>";
 }
 
-
 ###
-sub check { #diagram 
+sub check {
     local $guess = $reverse_userdiag;
     @answers = split(/ro/,$answer);
     my $error;
@@ -649,41 +677,65 @@ sub check { #diagram
 	}
     }
 
+    my $score = 0;
     if ($error or !$conclusion_ok) {
-	$msg = "Your diagram is incorrect or incomplete. ";
-	
+	print
+	    "<font color=\"$maroon\">",
+	    "<strong>",
+	    "Your diagram is incorrect. ";
+
 	if (&count_nontab_elements($userconc)>1) {
-	    $msg.="The bottom row of your diagram must not contain more than one cell (except for tabs). ";
+	    $errmsg="The bottom row of your diagram must not contain more than one cell (except for tabs). ";
 	} elsif ($conclusion_ok) {
 	    my $level = "the main conclusion";
 	    $level .= " and the row(s) above it"
 		if $error =~ /more|fewer/ and &get_row($guess,1);
-	    $err.="You have correctly identified $level, but "
+	    $errmsg="You have correctly identified $level, but "
 		.&diagnose_error($error);
 	} else {
-	    $msg.="You have not correctly identified the main conclusion. ";
+	    $errmsg="You have not correctly identified the main conclusion.";
 	}
-	$msg .= " Keep going!";
-	&display_argument(@userdiag);
-
+	print $errmsg;
 	
+	&mailit($mailto,"$guess compared to $answer judged incorrect: $errmsg")
+	    if $mailto;
+	
+	print
+	    " Keep going!",
+	    "</strong>",
+	    "</font>",
+	    "<br>";
+	&display_argument(@userdiag);
     } elsif ($conclusion_ok) {
-	$msg = "Congratulations: no errors were found.";
-	&display_argument('clean',@userdiag);
-	$cgi->delete('prob');
+	$score = 1;
 	print
 	    "<center>",
+	    "Congratulations: no errors were found.<p>\n",
+	    "<em>Your diagram</em>\n";
+
+	#&mailit($mailto,
+	# "$guess compared to $answer judged correct")
+	#    if $mailto;
+
+	&display_argument('clean',@userdiag);
+	$cgi->delete('prob');
+
+	print
 	    "<hr>\n",
 	    $cgi->startform,
 	    $cgi->submit(-name=>'act',-value=>"Another from $POL::exercise?"),
 	    "</center>\n",
 	    $cgi->hidden('exercise'),
 	    $cgi->hidden('prevchosen'),
-	    $cgi->endform,
-	    "</center>",
-	    ;
+	    $cgi->endform;
     }
-
+    my %pageoutdata = %pageoutid;
+    if (%pageoutdata) {
+	$pageoutdata{'vendor_assign_id'} = $POL::exercise;
+        $pageoutdata{'assign_probs'} = [ $POL::probnum ];
+        $pageoutdata{'student_score'} = [ $score ];
+	&send_to_pageout(%pageoutdata);
+    }
     &pol_footer;
     &end_polpage;
 }

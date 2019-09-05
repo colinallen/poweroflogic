@@ -13,6 +13,8 @@ $cgi->import_names('BR');
 $program  = $cgi->url;
 $fullprog  = $cgi->self_url;
 
+&cant_be_done unless $POL::exercise; 
+
 ####################################################
 # ADD LOCAL MENU ITEMS HERE
 # $polmenu{"Main Menu"} = "../menu.cgi";
@@ -135,7 +137,7 @@ sub generate_quiz {
     
     local $subtitle = "Exercise $section";
     $subtitle .= "$part: Probability" if $part;
-    local $instructions = "";
+    local $instructions = $preamble;
 
     &start_polpage();
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
@@ -143,10 +145,6 @@ sub generate_quiz {
     print $cgi->startform();
 
 ### Generate the quiz
-
-    print table({-border=>0},
-		Tr(td({align=>left},
-		      $preamble)));
 
     print
 	"<table border=0>\n",
@@ -223,7 +221,7 @@ sub check_answers {
     local $nextq;
     local $subtitle = "Evaluation of your answers from Section&nbsp;$POL::section";
     $subtitle .= ", Part&nbsp;$POL::part" if $POL::part;
-    local $instructions = "";
+    local $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">The Logic Tutor responds...</span>";
     
 ### Print out PoL logo and header
 
@@ -234,7 +232,7 @@ sub check_answers {
     print
 	"<table>\n",  # put it all inside a one-cell table
 	"<tr><td align=left>\n",
-	h2("The Logic Tutor responds:"), 
+	#h2("The Logic Tutor responds:"), 
 	"<dl>\n";
 
     my @probs_attempted;
@@ -344,4 +342,17 @@ sub rounded4 { # float
     my $rounded = sprintf("%.4f", eval($_[0]));
     $rounded =~ s/\.?0+$//;
     return $rounded;
+}
+
+### trap function for incomplete/direct cgi calls
+sub cant_be_done { 
+    local $subtitle = 	"Probability Questions";
+    local $instructions = "<center><strong>You reached this page without going through the Chapter menus.<br> Please return to the Main Menu and make your selection there. </strong></center>";
+    
+    &start_polpage;
+    print
+	$cgi->startform();
+    &pol_header($subtitle,$instructions);
+    &footer();
+    &bye_bye();
 }

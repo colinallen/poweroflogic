@@ -20,20 +20,14 @@ $preamble;
 sub choose_quiz_type {
 #    my ($exercise,$topic) = @_;
     my ($probfile,$exercise) = @_;
-    my $subtitle = "Exercise $exercise";
-    my $instructions = "<strong><font color=\"$INSTRUCTCOLOR\">Choose a quiz type!</font></strong>  \"User choice\" lets you pick which problem from Exercise $exercise to work on.  \"Random\" selects several problems at random for you from Exercise $exercise.";
+    my $subtitle = "Exercise $POL::exercise";
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">Choose a quiz type!</span>  \"User choice\" lets you pick which problems to work on.  \"Random\" selects several problems at random for you.";
     my @prev_chosen;
 
     &start_polpage('Choose a quiz type!');  
-    &pol_header($subtitle);
+    &pol_header($subtitle,$instructions);
 
     print
-	#"<table border=0><!--begin instructions table-->\n", # table for the instructions
-	#"<tr><td align=left>\n",
-	$instructions,
-	#"</td></tr>\n",
-	#"</table><!--end instructions table-->\n", # end of table for instructions
-
 	$cgi->startform(),
 	"<center>",
 	$cgi->radio_group(-name=>'action',
@@ -42,10 +36,11 @@ sub choose_quiz_type {
 			  -rows=>3,
 			  -columns=>1,
 			  -override=>1),
-	"<hr />",
-	$cgi->submit(-value=>'Show me the Problems!'),
 	"</center>",
-	
+	"<hr />",
+	"<center>",
+	$cgi->submit(-value=>'Show me the Problems!'),
+	"<center\>",
 	$cgi->hidden(-name=>'probfile',-value=>$probfile),
 	$cgi->hidden(-name=>'exercise',-value=>$exercise),
 	$cgi->hidden('prev_chosen',@prev_chosen),
@@ -66,8 +61,8 @@ sub pick_probs {
     my $ex = $exercise;
     $ex =~ s/i//g;
     my $subtitle = "";
-    my $instructions = "Choose the sentences you\'d like to be quizzed on and click on the button below, or on one of the small images to the left of the problems, to generate your quiz!";
-    my $instructions3 = "\<img src=$smallgreyPoLogo\> = previously selected during this session.";
+    my $instructions = "<span style=\"font-size: 14px; color: $INSTRUCTCOLOR;\">Use the checkboxes to choose the items you\'d like to be quizzed on and click on the button at the bottom of the page, or on any of the arrow images to the left of the problems, to generate your quiz!</span>";
+    $instructions .= $PREVCHOICEINSTRUCTION if @POL::prev_chosen;
     
     my @problems;
 
@@ -83,54 +78,33 @@ sub pick_probs {
     @prev_chosen = sort { $a <=> $b } &remove_array_dups(@prev_chosen);
 
     if (@prev_chosen >= @problems) {
-        $instructions2 = "You have attempted all of the problems in this exercise -- but feel free to keep going!";
-        $cgi->delete('prev_chosen');
-        @prev_chosen = ();
+        $instructions = "You have attempted all of the problems in this exercise -- but feel free to practice them again!";
     }
 
     $cgi->delete('problem'); # delete any previous selection
     $cgi->delete('problem_num'); # delete problem number for any previous selection
 
-#    my $subtitle = "Exercise $ex: $topic";
-    $subtitle = "Exercise $ex";
+    my $subtitle = "Exercise $ex: $topic";
+    $subtitle = "Exercise $POL::exercise";
 
     &start_polpage('Pick argument');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
-
-    print
-      "<table border=0>\n",
-      "<tr><td align=left>\n",
-      "<strong><font color=$INSTRUCTCOLOR>",
-      $instructions,
-      "</font></strong>",
-      "</td></tr>";
+    &pol_header($subtitle,$instructions);
 
     if ($instructions2) {
         print
-          "<tr><td>\n",
-          "<table border=1 align=center width=80%>",
-          "<tr valign=center><td valign=center align=center bgcolor=$RIGHTPAGECOLOR>",
-          "<font size=\"-1\">\n",
-          "&nbsp;<br><i>\n",
-          "$instructions2\n",
-          "</i>\n",
-          "</font>\n",
-          "</td></tr>",
-          "</table>",
-          "</td></tr>\n\n";
+	    "<table border=1 align=center width=80%>",
+	    "<tr valign=center><td valign=center align=center bgcolor=$RIGHTPAGECOLOR>",
+	    "<font size=\"-1\">\n",
+	    "&nbsp;<br><i>\n",
+	    "$instructions2\n",
+	    "</i>\n",
+	    "</font>\n",
+	    "</td></tr>",
+	    "</table>",
     }
-
-    if (@prev_chosen) {
-        print
-          "<tr><td valign=center>\n",
-          "<font size=-2>$instructions3</font></p>\n",
-          "</td></tr>\n";
-    }
+    
         
-    print
-      "</table>\n";
-
-    print                                   # create a table containing all the problems in the exercise
+    print        # create a table containing all the problems in the exercise
       $cgi->startform,
       $cgi->hidden(-name=>'action',-value=>'Generate my quiz!',-override=>1),
       "<table width=\"100%\" border=0>\n";
@@ -140,6 +114,15 @@ sub pick_probs {
     my @temp = @prev_chosen;
     foreach $problem (@problems) {
         $problem =~ s/^(.*?)::.*/$1/;
+
+	# here we recode ascii version of logical symbols as utf
+	if ($problem =~ /^<tt>(.*)<\/tt>$/) {
+	    my $form = $1;
+	    $form =~ s/&gt;/>/g;
+	    $form =~ s/&lt;/</g;
+	    $problem = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span>";
+	}
+	
         my $logo = ($count == $temp[0] and shift(@temp)) ? $smallgreyPoLogo : $smallPoLogo;
 
         print # Image button
@@ -260,3 +243,17 @@ sub all_question_list {
     return @selected;
 }
 1;
+
+
+### trap function for incomplete/direct cgi calls
+sub cant_be_done { 
+    local $subtitle = 	"Multiple Choice Questions";
+    local $instructions = "<center><strong>You reached this page without going through the Chapter menus.<br> Please return to the Main Menu and make your selection there. </strong></center>";
+    
+    &start_polpage;
+    print
+	$cgi->startform();
+    &pol_header($subtitle,$instructions);
+    &footer();
+    &bye_bye();
+}

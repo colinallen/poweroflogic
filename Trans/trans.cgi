@@ -13,7 +13,6 @@ require '../Trans/trans-subrs.pl';
 
 $program  = $cgi->url;
 $fullprog  = $cgi->self_url;
-local %pageoutdata = %pageoutid;
 
 @prev_chosen = @POL::prev_chosen if @POL::prev_chosen;
 shift @prev_chosen if (@prev_chosen and !$prev_chosen[0]); # get rid of that damn empty first element
@@ -36,6 +35,8 @@ if ($POL::exercise) { # add menu items
     $polmenu{"More from Ch. $chapter"} = "../menu.cgi?chapter=$chapter";
 }
 
+
+
 #####################################################
 
 srand; #seed random
@@ -43,8 +44,18 @@ $qsep = "-:-";
 $sep = "::";
 
 $debug=0;
-# $probfile = $EXHOME."$chapter/$chapter.$exnum";
 $probfile = $EXHOME."$chapter/$POL::exercise";
+$probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
+
+# get preamble for problems from file
+$preamble = "";
+open(FILE,$probfile) || &html_error("Could not open problem file $probfile");
+while (<FILE>) {
+    $preamble .= $_ and next if /^\#!preamble/;
+    next if /^\s*$|^\#/;
+}
+close(FILE);
+$preamble =~ s/\#!preamble//g;
 
 for ($POL::action) {
 
@@ -75,6 +86,7 @@ for ($POL::action) {
 
 }
 
+&roll_yer_own_att;  ##  clean up this subroutine
 &bye_bye;
 
 ############################################################
@@ -84,7 +96,7 @@ sub choose_quiz_type {
     my $instructions = "<strong><font color=$LEFTPAGECOLOR>Choose a quiz type!</font></strong>  \"User choice\" lets you pick which problem from Exercise $exercise to work on.  \"Random\" picks a problem at random from Exercise $exercise.";
 
     &start_polpage('Choose a quiz type!');  
-    &pol_header($subtitle);
+    &pol_header($subtitle,$instructions);
 
     print
 	"<table border=0><!--begin instructions table-->\n",    # table for the instructions
@@ -123,48 +135,27 @@ sub choose_quiz_type {
 sub pick_trans {
     my @problems;
     my ($chapter) = split(/\./,$POL::exercise,2);
-    my $probfile = "$EXHOME$chapter/$POL::exercise";
     my $exercise = $POL::exercise;
     $exercise =~ s/i//g;
     my $subtitle = "Exercise $exercise: Symbolization";
-    my $instructions = "<center><strong><font color=\"$INSTRUCTCOLOR\">Pick a sentence to symbolize!</font></strong></center>";
-    my $preamble = "";
-    
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold;\">Pick a sentence to symbolize!</span>";
     $cgi->delete('problem'); # delete any previous selection
     $cgi->delete('problem_num'); # delete any previous selection
 
-    $probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
     open(FILE,$probfile) || &html_error("Could not open problem file $probfile");
     while (<FILE>) {
-	$preamble .= $_ and next if /^\#!preamble/;
 	next if /^\s*$|^\#/;
 	chomp;
 	push @problems, $_;
     }
     close(FILE);
-    $preamble =~ s/\#!preamble//g;
 
     &start_polpage('Pick a sentence');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
+    my $instructions = $preamble;
+    $instructions .= $PREVCHOICEINSTRUCTION if @POL::prev_chosen;
 
-    print
-      "<table border=0>\n",
-	"<tr><td align=left>\n",
-	$preamble,
-	"</td></tr>\n",
-	"<tr><td align=left>\n",
-	$instructions,
-	"</td></tr>\n",
-	"</table>\n";
+    &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
 
-    if (@prev_chosen) {
-            print            # Note that $smallgreyPoLogo indicates previous selection
-              "<table border=0>\n",
-              "<tr><td align=left>\n",
-              "<img src=$smallgreyPoLogo> = <font size=-2>previously selected in this session</font>\n",
-              "</td></tr>\n",
-              "</table>\n";
-        }
 
     # create a table containing all the problems in the exercise
     print
@@ -243,7 +234,6 @@ sub user_choice {
     $part =~ s/^.*\d+\.\d+([A-Z])/$1/;
 
     $qtype_marker = "\#!qtype";
-    $preamble_marker = "\#!preamble";
 
     local ($sentence_scheme,$errmsg,$raw_trans) = split($sep,$problem,3);
     local $sentence = $sentence_scheme;
@@ -273,7 +263,7 @@ sub user_choice {
 	}
 
 	if ($user_trans =~ /^\s*$/) {
-	    $msg = "You did not provide a translation.  Translate the sentence using the scheme of abbreviation provided.";
+	    $msg = "You did not provide a translation.<br>Translate the sentence using the scheme of abbreviation provided.";
 	    $action = "Check answer!";
 	    last CASE 
 	}
@@ -302,12 +292,12 @@ sub user_choice {
 	if ($extraORmissing_pred) {
 	    my $pred = substr($extraORmissing_pred,0,1);
 	    if ($extraORmissing_pred =~ /extra/) {
-	    $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>contains the predicate or statement letter</em> &lsquo;<tt>$pred</tt>&rsquo; <em>, which does not occur in the given scheme of abbreviation.</em>";
+	    $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>contains the predicate or statement letter</em> &lsquo;<tt>$pred</tt>&rsquo; <em>, which does not occur in the given scheme of abbreviation. Try again!</em>";
 	    $msg .= "\n<p>";
 	    $action = "Check answer!";
 	    last CASE
 	  } else {  # $extraORmissing_pred =~ /missing/ in this case
-	  $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>is missing the predicate or statement letter</em> &lsquo;<tt>$pred</tt>&rsquo; <em>, which occurs in the given scheme of abbreviation and hence is needed in a good translation.</em>";
+	  $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>is missing the predicate or statement letter</em> &lsquo;<tt>$pred</tt>&rsquo; <em>, which occurs in the given scheme of abbreviation, providing a clue that it is needed in a good translation.</em>";
 	    $msg .= "\n<p>";
 	    $action = "Check answer!";
 	    last CASE
@@ -324,7 +314,7 @@ sub user_choice {
 	    $action = "Check answer!";
 	    last CASE
 	  } else {  # $extraORmissing_cons =~ /missing/ in this case
-	    $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>is missing the individual constant</em> &lsquo;<tt>$cons</tt>&rsquo; <em>, which occurs in the given scheme of abbreviation and hence is needed in a good translation.</em>";
+	    $msg = "<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>is missing the individual constant</em> &lsquo;<tt>$cons</tt>&rsquo; <em>, which occurs in the given scheme of abbreviation, providing a clue that it is needed in a good translation.</em>";
 	    $msg .= "\n<p>";
 	    $action = "Check answer!";
 	    last CASE
@@ -346,9 +336,8 @@ sub user_choice {
 	# Check to see if the user's answer matches the canned answer exactly (save
 	# perhaps for parens)
 	if (&paren_eq($trans,$user_trans)) {
-            &do_pageout($POL::exercise,$POL::problem_num,'1');
-	    $print_this = "<center><h1>Correct!</h1></center>
-<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center><p /><em>using the scheme of abbreviation</em><p /><center>$scheme</center><p /><em>is correct.</em>";
+	    $print_this = "<center><h1>Correct!</h1>
+<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center><p /><em>using the scheme of abbreviation</em><p /><center>$scheme</center><p /><em>is correct.</em></center>";
 	    $action = "Another problem from Exercise $exercise?";
 	    last CASE
 	  }
@@ -361,17 +350,14 @@ sub user_choice {
 	my $result = &log_equiv($trans,$user_trans);
 
 	if ($result == 1) {
-            &do_pageout($POL::exercise,$POL::problem_num,'1');
-	    $print_this = "<center><h1>Correct!</h1></center>
-<em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center></p> <em>using the scheme of abbreviation</em><p><center>$scheme</center><p><em>is correct!</em>";
+	    $print_this = "<center><h1>Correct!</h1><em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center></p> <em>using the scheme of abbreviation</em><p><center>$scheme</center><p><em>is correct!</em></center>";
 	    $action = "Another problem from Exercise $exercise?";
 	    last CASE
 	}
 
 	if ($result == 2) {
-            &do_pageout($POL::exercise,$POL::problem_num,'0');
-	    $print_this = "$MACE4OUTPUT<center><h1>Timed out!</h1></center>
-<em>For theoretical reasons, we are unable to determine precisely whether your symbolization</em><p><center><tt>$pretty_user_trans</tt></center><p><em>of the sentence</em><p><center>$sentence</center><p><em>is correct. However, it is <em>likely</em> that your answer is incorrect if the Web Tutor did not find it to be correct within a few seconds. It is suggested, therefore, that you try it again and CONTINUE READING ONLY IF YOU WANT TO KNOW THE ANSWER: Anything logically equivalent to </em><p><center><tt>$pretty_trans</tt></center><p><em> (using all and only the vocabulary of the given abbreviation scheme) is considered a correct symbolization</em>.</em>";
+	    $print_this = "$MACE4OUTPUT<center><h1>Timed out!</h1>
+<em>For theoretical reasons, we are unable to determine precisely whether your symbolization</em><p><center><tt>$pretty_user_trans</tt></center><p><em>of the sentence</em><p><center>$sentence</center><p><em>is correct. However, it is <em>likely</em> that your answer is incorrect if the Web Tutor did not find it to be correct within a few seconds. It is suggested, therefore, that you try it again and CONTINUE READING ONLY IF YOU WANT TO KNOW THE ANSWER<hr>Anything logically equivalent to </em><p><center><tt>$pretty_trans</tt></center><p><em> (using all and only the vocabulary of the given abbreviation scheme) is considered a correct symbolization</em>.</em></center>";
 	    $action = "Another problem from Exercise $exercise?";
 	    last CASE
 	}
@@ -386,9 +372,19 @@ sub user_choice {
 	    $msg .= $tag;
 	    $action = "Check answer!";
 	} else {
-            &do_pageout($POL::exercise,$POL::problem_num,'0');
-	    $print_this = "<center><h1>The Answer</h1></center><em>
-Your symbolization</em> &lsquo;<tt>$pretty_user_trans</tt>&rsquo; <em>of the sentence</em> <p /><center>$sentence</center><p /> <em>using the scheme of abbreviation</em> <p /><center>$scheme</center><p /><em>is not correct.  Anything logically equivalent to </em><p><center><tt>$pretty_trans</tt></center><p><em> (using all and only the vocabulary of the given abbreviation scheme) is considered a correct symbolization.</em>";
+	    $print_this = "
+<div style=\"text-align:center\">
+<h2>Too many attempts!</h2>
+<em>Your symbolization</em>
+<div style=\"padding:5px\">&lsquo;<tt>$pretty_user_trans</tt>&rsquo;</div>
+<div style=\"padding:5px\"><em>of</em> &lsquo;$sentence&rsquo;</div>
+<em>using the scheme of abbreviation</em>
+<div style=\"padding:5px\">$scheme</div>
+<em>is not correct. Anything logically equivalent to </em>
+<div style=\"padding:5px\"><tt>$pretty_trans</tt></div>
+<em> (using all and only the vocabulary of the given abbreviation scheme)
+<br>would be accepted as a correct symbolization.</em></p>
+</div>";
 	    $action = "Another problem from Exercise $exercise?";
 	}
     }  # end CASE
@@ -396,30 +392,30 @@ Your symbolization</em> &lsquo;<tt>$pretty_user_trans</tt>&rsquo; <em>of the sen
 
 ### Print out the form (if new, or correct (or intractable) answer not given on previous submission ###
 
+    #QWERTY
+
     local $subtitle = "Exercise $exercise, Problem $problem_num\n";
-    local $instructions = "<font color=\"$INSTRUCTCOLOR\">$msg</font>";
-    
+    my $instructions = $preamble;
     &start_polpage();
     &pol_header($subtitle,$instructions); # create outer table, print the PoL header
     
     print
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
-	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('user_trans'))");
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\">",
+	"</script>",
+	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('user_trans'))"),
+	;
+
+    print "<div style=\"border:0px solid red; color:$INSTRUCTCOLOR; text-align:center; padding:0px 0px 10px 0px\">$msg</div>"
+	if $msg;
 	
-    print
-	"<table width=100% border=0>\n";
-
     if ($action =~ /Check/) {
-	&user_choice_answer_form($problem_num,$sentence_scheme)
+	print "<table width=100% border=0>";
+	&user_choice_answer_form($problem_num,$sentence_scheme);
+	print "</table>";
     } else {
-	print 
-	    "<tr><td>\n",
-	    $print_this;
+	print $print_this;
     }
-
-    print 
-	"</table>\n";
-
+    
     print
 	"<hr width=98%>\n",
 	"<center>",
@@ -487,21 +483,17 @@ sub generate_quiz {
     $qtype;
     $values;
     $qtype_marker = "\#!qtype";
-    $preamble_marker = "\#!preamble";
-    $preamble;
     my $numqs = 1;
 #    $numqs = 3 if $POL::exercise eq '9.5B';
 
     # Determine the number of questions in the quiz file
 
-    $probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
     open(PROBFILE,$probfile);
     
     while(<PROBFILE>){
 	chop;
 	($foo,$qtype) = split(/ /,$_,2) and next if /$qtype_marker/;  #get $qtype and continue
 	($foo,$values) = split(/ /,$_,2) and next if /values/;
-	($preamble .= $_) and next if /$preamble_marker/;
 	next if /\#/;
 	next if /^\s*$/;
 	push @questions, $_;                     # Push each line in $probfile onto @questions
@@ -516,7 +508,6 @@ sub generate_quiz {
     $numqs=@questions if @questions<$numqs;
     my $plural = "s" if $numqs > 1;
     
-    $preamble =~ s/\#!preamble//g;
 
 ### The following chunk of code generates a random list of quiz questions w/o duplicates
 ### It also checks that no previously chosen questions show up in later rounds
@@ -561,7 +552,7 @@ sub generate_quiz {
 
 #    local $subtitle = "Exercise $section$part";
     local $subtitle = "Exercise $exercise: Symbolization";
-    local $instructions = "";
+    local $instructions = $preamble;
 
     &start_polpage();
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
@@ -570,13 +561,6 @@ sub generate_quiz {
 	$cgi->startform();
 
 ### Generate the quiz
-
-    print
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	$preamble,
-	"</td></tr>\n",
-	"</table>\n";
 
     print
 	"<table border=0>\n";
@@ -628,8 +612,7 @@ sub answer_form {
 			-size=>30),
 	"</td>\n",
 	"<td align=left>\n",
-#	"$qnum.&nbsp;&nbsp;$ques</td>\n",
-	"$ques</td>\n",   # Removed $qnum since we're only displaying one problem at a time
+	"$ques</td>\n",
 	"</tr>\n";
 }
 
@@ -728,36 +711,33 @@ sub paren_eq {
     return 0;
 }
 
-###
-sub do_pageout {
-    my ($exercise,$probnum,$score) = @_;
-#    if (%pageoutdata && $probnum && $score) { # send result to pageout
-    if (%pageoutdata && $probnum) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ $probnum ];
-        $pageoutdata{'student_score'} =[ $score ];
-        &send_to_pageout(%pageoutdata);
-    }
-}
 
-###
-sub html_error { # dirty exit
-    my ($err_msg) = @_;
+###########################################################
+sub roll_yer_own_att {
 
-#    &mailit("webmaster\@poweroflogic.com",$err_msg);
-    &start_polpage("Error");
-    &pol_header("ERROR");
+    local $subtitle = 	"Create your own truth table",
+    local $instructions = "<center><strong>This feature is not supported for symbolization.</strong></center>";
+    &start_polpage;
     print
-	h2($err_msg),
-	$cgi->startform,
-	$cgi->submit(-name=>'void',-value=>'Click to continue'),
-	$cgi->endform,
-	$cgi->Dump;
-    &pol_footer;
+	$cgi->startform();
 
-    &end_polpage;
+    &pol_header($subtitle,$instructions);
+
+    # print
+    # 	"<center>\n",
+    # 	"<p>",
+    # 	$cgi->textfield(-name=>'user_argument',
+    # 			-style=>'font-family: monospace',
+    # 			-size=>50,-default=>''),
+    # 	"<br>",
+    # 	$cgi->submit(-name=>'action',-value=>'Make the truth table!'),
+    # 	$cgi->endform,
+    # 	"</center>";
+
+    &footer();
+
+    &bye_bye();
 }
-
 
 #### NOTHING BELOW IS USED ANYMORE ####
 

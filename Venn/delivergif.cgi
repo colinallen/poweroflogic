@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-require "../lib/pol.conf";
-
 use CGI;
 $cgi = new CGI;
+
+require "../lib/header.pl";
 
 $image = $cgi->param('image');
 $image = '00000000.gif' if !$image;
@@ -17,9 +17,9 @@ sub delivervenngif {
     $program = $cgi->url;
     
     my $fullpath = "$venndiaghome/$image";
-
+    
     print $cgi->header(-type=>'image/gif');
-
+    
     $fullpath =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
     open(FILE,$fullpath);
     while (<FILE>) {

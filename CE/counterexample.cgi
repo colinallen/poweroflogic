@@ -231,7 +231,7 @@ sub substituter {
     my $verb = 'are';
     $verb = 'are&nbsp;not' if $negat;
     return Tr({-bgcolor=>$RIGHTPAGECOLOR},
-	      td({-valign=>center, -align=>center},
+	      td({-valign=>middle, -align=>center},
 		 ["<font size=+2>$qntfr</font>",
 		  $popup1,
 		  "<font size=+2>$verb</font>",
@@ -390,17 +390,17 @@ sub get_preamble {
 sub choose_quiz_type {
     my $exercise = $POL::exercise;
     my $subtitle = "Exercise $exercise: Counterexamples";
-    my $instructions = "<strong><font color=$LEFTPAGECOLOR>Choose a quiz type!</font></strong>  \"User choice\" lets you pick which problem from Exercise $exercise to work on.  \"Random\" selects one problem at random from Exercise $exercise.";
+    my $instructions = "<strong><font color=$INSTRUCTCOLOR>Choose a quiz type!</font></strong>  \"User choice\" lets you pick which problem from Exercise $exercise to work on.  \"Random\" selects one problem at random from Exercise $exercise.";
 
     &start_polpage('Choose a quiz type!');  
-    &pol_header($subtitle);
+    &pol_header($subtitle,$instructions);
 
     print
-	"<table border=0><!--begin instructions table-->\n",    # table for the instructions
-	"<tr><td align=left>\n",
-	$instructions,
-	"</td></tr>\n",
-	"</table><!--end instructions table-->\n",              # end of table for instructions
+	#"<table border=0><!--begin instructions table-->\n",    # table for the instructions
+	#"<tr><td align=left>\n",
+	#$instructions,
+	#"</td></tr>\n",
+	#"</table><!--end instructions table-->\n",              # end of table for instructions
 	"<center>",
 	"<table border=0 width=\"100%\"><!--begin radio buttons table-->\n",   # table for the radio buttons
 	"<tr>\n",
@@ -462,13 +462,9 @@ sub pick_prob {
 		    "<font color=$LEFTPAGECOLOR>",
 		    strong("Pick an argument"),
 		    "</font>",
-		    )),
-	      Tr(td({-align=>'left',-valign=>'middle'},
-		    "<img src=\"$smallgreyPoLogo\">"),
-		 td({-align=>'left',-valign=>'middle'},
-		    "<font size=\"-2\">",
-		    "= previously selected during this session",
-		    "</font>")));
+		 ))),
+	$PREVCHOICEINSTRUCTION,
+	;
 
 
     print    # create a table containing all the problems in the exercise
@@ -491,13 +487,13 @@ sub pick_prob {
 	    $cgi->endform,
 
 	    
-	    "\n<td width=5% valign=\"top\" align=\"left\" bgcolor=$RIGHTPAGECOLOR>\n",
+	    "\n<td width=5% valign=\"middle\" align=\"left\" bgcolor=$RIGHTPAGECOLOR>\n",
 	    "\n<font size=-1>\n",
 	    strong("#$count"),
 	    "</font>",
 	    "\n</td>",
 
-	    "\n<td valign=top align=left>\n",
+	    "\n<td valign=\"middle\" align=\"left\">\n",
 	    "\n<font size=-1>\n",
 	    $problem,
 	    "</font>\n</td>",

@@ -37,17 +37,29 @@ $prevchosen_string = join "::", keys %prevchosen; # used for menu
 # ADD LOCAL MENU ITEMS HERE
 # $polmenu{"Main Menu"} = "../menu.cgi";
 
-if ($POL::exercise =~ /^(\d+)\./) {
-    $polmenu{"More from Ch. $1"} = "../menu.cgi?chapter=$1";
-    $polmenu{"More from Ex. $POL::exercise"} = $cgi->url."?exercise=$POL::exercise&prevchosenstring=$prevchosen_string&do=".time;
-}
-
 $polmenu{'Help with Venn'} = "../help.cgi?helpfile=vennhelp.html"
     if $POL::prob;
 
+if ($POL::exercise =~ /^(\d+)\./) {
+    $polmenu{"More from Ch. $1"} = "../menu.cgi?chapter=$1";
+    $polmenu{"More from Ex. $POL::exercise"} = $cgi->url."?exercise=$POL::exercise&prevchosenstring=$prevchosen_string&do=".time;
+
+    # get instructions for this exercise
+    my ($chapter,$foo) = split(/\./,$POL::exercise,2);
+    my $probfile = "$EXHOME$chapter/".$POL::exercise;
+    $probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
+    open(FILE,$probfile) || die("Could not open problem file $probfile");
+    while (<FILE>) {
+	$preamble .= $_ if /^\#!preamble/;	    
+    }
+    close(FILE);
+}
+$preamble =~ s/\#!preamble//g;
+$instructions.=$preamble
+
 #####################################################
 
-&start_polpage($title);
+&start_polpage($title, $instructions);
 
 if ($POL::prob) {
     $POL::prob = &rot($POL::prob);
@@ -62,7 +74,7 @@ if ($POL::prob) {
     = split("::",$POL::prob,4);
 
 if ($POL::action =~/Check/) {
-    &twocirc_checkdiag($subject,$predicate,$statement);
+    &twocirc_checkdiag($subject,$predicate,$statement,$title);
 } elsif ($POL::action =~ /Shad|Partic/) {
     &twocirc_redraw($subject,$predicate,$statement,$title);
 } else {

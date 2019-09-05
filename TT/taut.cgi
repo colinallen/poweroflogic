@@ -80,26 +80,13 @@ sub pickwff {
     close(FILE);
 
     $preamble =~ s/\#!preamble//g;
+    $instructions = $preamble;
+
+    $instructions .= $PREVCHOICEINSTRUCTION # Note that $smallgreyPoLogo indicates previous selection
+	if @POL::prev_chosen; 
 
     &start_polpage('Choose an argument');
-#    &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
-
-    print                                 # print the preamble (in its own table)
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n";
-
-    if (@prev_chosen) {
-            print            # Note that $smallgreyPoLogo indicates previous selection
-              "<table border=0>\n",
-              "<tr><td align=left>\n",
-              "<img src=$smallgreyPoLogo> = <font size=-2>previously selected in this session</font>\n",
-              "</td></tr>\n",
-              "</table>\n";
-        }
 
     print                                  # create a table containing all the problems in the exercise
 	"<table border=0>\n";
@@ -114,10 +101,10 @@ sub pickwff {
 
     foreach $wff (@problems) {
 	++$count;
-	my $pretty_wff = &prettify($wff);
-	$pretty_wff =~ s/[<]/&lt;/g;
-	$pretty_wff =~ s/[>]/&gt;/g;
-	$pretty_wff =~ s/(:\.)|(\.:)/<img align=bottom src=$therefore>/;
+	my $pretty_wff = ascii2utf(&prettify($wff));
+	#$pretty_wff =~ s/[<]/&lt;/g;
+	#$pretty_wff =~ s/[>]/&gt;/g;
+	#$pretty_wff =~ s/(:\.)|(\.:)/<img align=bottom src=$therefore>/;
 
         my $logo = $smallPoLogo;
         $logo = $smallgreyPoLogo if (grep {$count == $_} @prev_chosen);
@@ -169,7 +156,7 @@ sub tt_form {
     my $tt_template = &make_tt_template($wff);
     my $default_tt = $tt_template;
     $default_tt = $tt if $tt;
-
+    $default_tt =  ascii2utf($default_tt);
 
     $border = 3 unless defined $border;
 
@@ -187,6 +174,8 @@ sub tt_form {
     local $pretty_wff = $tt_template;
     $pretty_wff =~ s/^.*?\| (.*?)\n.*/$1/s;  # extract the sequent from tt_template
     $pretty_wff =~ s/[\t\s]*$//;            # remove any trailing spaces or tabs
+
+    #$pretty_wff =~ ascii2utf($pretty_wff);
 
     local $table_width = length("$atoms| $pretty_wff")+5;
     local $table_length = $numrows+3;
@@ -208,32 +197,21 @@ sub tt_form {
     &start_polpage('Power of Logic: Truth Table exercise') if not $tt;
 
     print
-	$cgi->startform();
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
 
     &pol_header($subtitle,$instructions) if not $tt;
-
+    $tt=$default_tt if not $tt;
+    
     print # begin a one column, one row table to contain the truth table template
 	"<center>\n",
+	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('tt'))"),
 	"<table border=0>\n";
-
-# This code is used if you want the argument to be displayed above the textarea
-#    local $display_seq = $pretty_wff;
-#    $display_seq =~ s/[<]/&lt;/g;
-#    $display_seq =~ s/[>]/&gt;/g;
-#    $display_seq =~ s/  /&nbsp;&nbsp;/g;  # Need to preserve dbl spacing b/w wffs in sequent in <tt> context below
-#
-#    print # row 1: atoms and sequent
-#	"<tr><td align=left>\n",
-#	"<tt>&nbsp;$atoms| $display_seq</tt>",
-#	"</td></tr>\n";
 
     print # Only row contains the truth table template in a textarea
 	"<tr><td align=left>\n",
-	$cgi->textarea(-name=>'tt',
-		       -default=>$default_tt,
-		       -rows=>$table_length,
-		       -columns=>$table_width,
-		       -style=>"font-family: monospace"),
+	"<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"tt\" name=\"tt\" default=\"$default_tt\" rows=\"$table_length\" cols=\"$table_width\"s style=\"font-family: monospace\">",
+	$tt,
+	"</textarea>",
 	"</td></tr>\n";
     
     print # close TT table

@@ -77,60 +77,63 @@ sub msg_ItsATautologyAlright {
     my ($wff) = @_;
     my $lhs = &lhs("($wff)");  # 7.5B doesn't use outer parens in the probset
     my $rhs = &rhs("($wff)");
-    my $pretty_wff = &prettify($wff);
-    my $pretty_lhs = &prettify($lhs);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_wff = ascii2utf(&prettify($wff));
+    my $pretty_lhs = ascii2utf(&prettify($lhs));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
 
-    return "Your truth table is correct.  Because <p><center><tt>$pretty_wff</tt></center><p> is true in every row of the truth table, you have thereby demonstrated that <p><center><tt>$pretty_lhs</tt></center><p> and <p><center><tt>$pretty_rhs</tt></center><p> are logically equivalent."
+    return "<center>Your truth table is correct.  Because <p><tt>$pretty_wff</tt><p> is true in every row of the truth table, you have thereby demonstrated that <p><center><tt>$pretty_lhs</tt></center><p> and <p><center><tt>$pretty_rhs</tt></center><p> are logically equivalent.</center>"
 }
 
 ###
 sub msg_NotContingent {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You have asserted that the WFF <p><center><tt>$pretty_wff</tt></center><p> is contingent.  However, a contingent statement is one that is true in at least one row of the truth table and false in at least one row.  This is not the case for this wff, so it is not contingent.  Please review the truth table and submit another answer."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+    return "<center>You have asserted that the WFF <p><tt>$pretty_wff</tt><p> is contingent.  However, a contingent statement is one that is true in at least one row of the truth table and false in at least one row.  This is not the case for this wff, so it is not contingent.  Please review the truth table and submit another answer.</center>"
 }
 
 ###
 sub msg_CorrectContingent {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You are correct!  The WFF <p><center><tt>$pretty_wff</tt></center><p> is true in at least one row and it is false in at least one row and is therefore contingent."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+    return "<center>You are correct!  The WFF <p><tt>$pretty_wff</tt><p> is true in at least one row and it is false in at least one row and is therefore contingent.</center>"
 }
 
 ###
 sub msg_NotAContra {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You have asserted that the WFF <p><center><tt>$pretty_wff</tt></center><p> is a contradiction.  However, it is true in at least one row, and so it is not the case that it is false regardless of the truth values assigned to the atomic statements that compose it.  So it cannot be a contradiction.  Try again."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+    return "<center>You have asserted that the WFF <p><tt>$pretty_wff</tt><p> is a contradiction.  However, it is true in at least one row, and so it is not the case that it is false regardless of the truth values assigned to the atomic statements that compose it.  So it cannot be a contradiction.  Try again.</center>"
 }
 
 ###
 sub msg_CorrectContra {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You are correct!  The WFF <p><center><tt>$pretty_wff</tt></center><p> has the truth value <tt>F</tt> in every row and is therefore a contradiction; it is false regardless of the truth values assigned to the atomic statements that compose it."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+    
+    return "<center>You are correct!  The WFF <p><tt>$pretty_wff</tt><p> has the truth value <tt>F</tt> in every row and is therefore a contradiction; it is false regardless of the truth values assigned to the atomic statements that compose it.</center>"
 }
 
 ###
 sub msg_NotATautology {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You have asserted that the WFF <p><center><tt>$pretty_wff</tt></center><p> is a tautology.  However, it is false in at least one row, and so it is not true regardless of the truth values assigned to the atomic statements that compose it.  So it cannot be a tautology.  Try again."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+
+    return "<center>You have asserted that the WFF <p><tt>$pretty_wff</tt><p> is a tautology.  However, it is false in at least one row, and so it is not true regardless of the truth values assigned to the atomic statements that compose it.  So it cannot be a tautology.  Try again.</center>"
 }
 
 ###
 sub msg_CorrectTautology {
     my ($wff) = @_;
-    my $pretty_wff = &prettify($wff);
-    return "You are correct!  The WFF <p><center><tt>$pretty_wff</tt></center><p> has the truth value <tt>T</tt> in every row and is therefore a tautology; it is true regardless of the truth values assigned to the atomic statements that compose it."
+    my $pretty_wff = ascii2utf(&prettify($wff));
+
+    return "<center>You are correct!  The WFF <p><tt>$pretty_wff</tt><p> has the truth value <tt>T</tt> in every row and is therefore a tautology;<br/>it is true regardless of the truth values assigned to the atomic statements that compose it.</center>"
 }
 
 ###
 sub msg_BadSlash {
     my ($row_num,$subwff,$wff_argtype,$wff) = @_;
-    my $pretty_subwff = &prettify($subwff);
-    my $pretty_wff = &prettify($wff);
+    my $pretty_subwff = ascii2utf(&prettify($subwff));
+    my $pretty_wff = ascii2utf(&prettify($wff));
 
     return "In Row $row_num, a slash / has been assigned to a statement letter or logical operator in the subWFF <tt>$pretty_subwff</tt> of the $wff_argtype <tt>$pretty_wff</tt>.  The presence of a slash in your abbreviated truth table indicates that you believe that you were unable to make the conclusion false on the truth values you assigned to its statement letters -- as required if a row is to show that the argument is invalid.  However, your inability to do so should be indicated by a slash only beneath the main logical operator of the conclusion itself; there should be no slash beneath any other of its components.  Correct this and try again."
 	if $wff_argtype eq "conclusion";
@@ -169,50 +172,52 @@ sub msg_TooFewTVsInATTRow {
 ###
 sub msg_BadBiconditional {
     my ($bicond,$bicond_tv,$lhs,$rhs,$row_num) = @_;
-    my $pretty_bicond = &prettify($bicond);
-    my $pretty_lhs = &prettify($lhs);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_bicond = ascii2utf(&prettify($bicond));
+    my $pretty_lhs = ascii2utf(&prettify($lhs));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
     return "The biconditional statement &nbsp;<tt>$pretty_bicond</tt>&nbsp; has been assigned &nbsp;<tt>$bicond_tv</tt>&nbsp; in Row $row_num, but its immediate components &nbsp;<tt>$pretty_lhs</tt>&nbsp; and &nbsp;<tt>$pretty_rhs</tt>&nbsp; have been assigned &nbsp;<tt>$lhs_tv</tt>&nbsp; and &nbsp;<tt>$rhs_tv</tt>, respectively.  Correct this and try again.";
 }
 
 ###
 sub msg_BadConditional {
     my ($cond,$cond_tv,$lhs,$rhs,$row_num) = @_;
-    my $pretty_cond = &prettify($cond);
-    my $pretty_lhs = &prettify($lhs);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_cond = ascii2utf(&prettify($cond));
+    my $pretty_lhs = ascii2utf(&prettify($lhs));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
     return "The conditional statement &nbsp;<tt>$pretty_cond</tt>&nbsp; has been assigned &nbsp;<tt>$cond_tv</tt>&nbsp; in Row $row_num, but its immediate components &nbsp;<tt>$pretty_lhs</tt>&nbsp; and &nbsp;<tt>$pretty_rhs</tt>&nbsp; have been assigned &nbsp;<tt>$lhs_tv</tt>&nbsp; and &nbsp;<tt>$rhs_tv</tt>, respectively.  Try again.";
 }
 
 ###
 sub msg_BadDisjunction {
     my ($disj,$disj_tv,$lhs,$rhs,$row_num) = @_;
-    my $pretty_disj = &prettify($disj);
-    my $pretty_lhs = &prettify($lhs);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_disj = ascii2utf(&prettify($disj));
+    my $pretty_lhs = ascii2utf(&prettify($lhs));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
     return "The disjunction &nbsp;<tt>$pretty_disj</tt>&nbsp; has been assigned &nbsp;<tt>$disj_tv</tt>&nbsp; in Row $row_num, but its immediate components &nbsp;<tt>$pretty_lhs</tt>&nbsp; and &nbsp;<tt>$pretty_rhs</tt>&nbsp; have been assigned &nbsp;<tt>$lhs_tv</tt>&nbsp; and &nbsp;<tt>$rhs_tv</tt>, respectively.  Correct this and try again.";
 }
 
 ###
 sub msg_BadConjunction {
     my ($conj,$conj_tv,$lhs,$rhs,$row_num) = @_;
-    my $pretty_conj = &prettify($conj);
-    my $pretty_lhs = &prettify($lhs);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_conj = ascii2utf(&prettify($conj));
+    my $pretty_lhs = ascii2utf(&prettify($lhs));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
     return "The conjunction &nbsp;<tt>$pretty_conj</tt>&nbsp; has been assigned &nbsp;<tt>$conj_tv</tt>&nbsp; in Row $row_num, but its immediate components &nbsp;<tt>$pretty_lhs</tt>&nbsp; and &nbsp;<tt>$pretty_rhs</tt>&nbsp; have been assigned &nbsp;<tt>$lhs_tv</tt>&nbsp; and &nbsp;<tt>$rhs_tv</tt>, respectively.  Correct this and try again.";
 }
 
 ###
 sub msg_BadNegation {
     my ($neg,$neg_tv,$rhs,$row_num) = @_;
-    my $pretty_neg = &prettify($neg);
-    my $pretty_rhs = &prettify($rhs);
+    my $pretty_neg = ascii2utf(&prettify($neg));
+    my $pretty_rhs = ascii2utf(&prettify($rhs));
     return "<tt>$pretty_neg</tt> has been assigned <tt>$neg_tv</tt> in Row $row_num, but its immediate component <tt>$pretty_rhs</tt> has also been assigned <tt>$neg_tv</tt>.  Correct this and try again.";
 }
 
 ###
 sub msg_SlashAassignedToAtom {
     my ($wff,$row_num) = @_;
+    $wff = ascii2utf($wff);
+
     return "An occurrence of the statement letter &nbsp;<tt>$wff</tt>&nbsp; has been assigned the &ldquo;inconsistent&rdquo; truth value &lsquo;<tt>/</tt>&rsquo;.  All occurrences of statement letters should uniformly be assigned either a &nbsp;<tt>T</tt>&nbsp; or an &nbsp;<tt>F</tt>&nbsp;; a &lsquo;<tt>/</tt>&rsquo; should only occur under the main logical operator of a wff, indicating that you were not able consistently to assign a single truth value to that wff.  Assign the occurrence of &nbsp;<tt>$wff</tt>&nbsp; in question a truth value and resubmit your answer."
 }
 
@@ -224,12 +229,16 @@ sub msg_ConflictingAssignments2 {
     $tv_of_wff_in_tva_area = 'F' if $wff_tv eq 'T';
     my $wff_type = 'statement letters';
     $wff_type = 'wffs' if $exp_att_context;
+    $wff = ascii2utf($wff);
+    
     return "In Row $row_num, the assignment of the truth value &nbsp;<tt>$tv_of_wff_in_tva_area</tt>&nbsp; to the $wff_type &nbsp;<tt>$wff</tt>&nbsp; in the truth value assignment area (i.e., the area to the left of the vertical bar &nbsp;&lsquo;<tt>|</tt>&rsquo;&nbsp;) conflicts with the value of &nbsp;<tt>$wff_tv</tt>&nbsp; that is assigned to one or more of the occurrences of &nbsp;<tt>$wff</tt> in the argument in that row.  Make sure that you have assigned truth values to the $wff_type in the truth value assignment area in each row consistently with the assignments they receive in the rest of the row."
 }
 
 ###
 sub msg_ConflictingAssignments1 {
     my ($wff,$row_num) = @_;
+    $wff = ascii2utf($wff);
+    
     return "The statement letter (or atomic sentence) &nbsp;<tt>$wff</tt>&nbsp; has been assigned both &nbsp;<tt>T</tt>&nbsp; and &nbsp;<tt>F</tt>&nbsp; in Row $row_num.  Make sure that you have assigned truth values to each occurrence of every sentence letter consistently in each row of your abbreviated truth table."
 }
 
@@ -275,6 +284,8 @@ sub msg_CorrectExpATTInvalid {
 sub msg_FAssignedToPremise {
     my ($row_num,$premise) = @_;
     my $pretty_premise = &prettify($premise);
+    $pretty_premise = ascii2utf($pretty_premise);
+
     return "You have assigned &nbsp;<tt>F</tt>&nbsp; to the premise &nbsp;<tt>$pretty_premise</tt>&nbsp; in Row $row_num.  An argument is invalid only if the conclusion can be false when all the premises are true.  Thus, invalidity cannot be shown by a row in an abbreviated truth table unless the premises are all assigned &nbsp;<tt>T</tt>, i.e., unless every premise is assumed to be true.";
 }
 
@@ -282,6 +293,8 @@ sub msg_FAssignedToPremise {
 sub msg_TAssignedToConclusion {
     local ($row_num,$conclusion) = @_;
     my $pretty_conclusion = &prettify($conclusion);
+    $pretty_conclusion = ascii2utf($pretty_conclusion);
+    
     return "You have assigned &nbsp;<tt>T</tt>&nbsp; to the conclusion <tt>$pretty_conclusion</tt> in Row $row_num.  An argument is invalid only if the conclusion can be false when all the premises are true.  Thus, invalidity cannot be shown by a row in an abbreviated truth table unless the conclusion is assigned &nbsp;<tt>F</tt>, i.e., unless the conclusion is assumed to be false.";
 }
 
@@ -337,19 +350,15 @@ sub msg_InconsistentTVA {
 
 ###
 sub msg_CannotFutzWithArg {
-    return "The argument in the problem you are working on has been altered.  It should be
-<center>
+    return "<center>The argument in the problem you are working on has been altered.  It should be
 <pre>
 $_[1]
 </pre>
-</center>
 but it has been altered so that it looks like this:
-<center>
 <pre>
 $_[2]
 </pre>
-</center>
-Please restore the original argument.  You may wish to copy the argument from this page and paste it into the previous page.  If you wish to experiment with truth tables, go to the option on the starting menu for creating your own truth table."
+Please restore the original argument.  You may wish to copy the argument from this page and paste it into the previous page.  If you wish to experiment with truth tables, go to the option on the starting menu for creating your own truth table.</center>"
 }
 
 ###
@@ -413,19 +422,19 @@ sub msg_TooManySlashes {
 
 ###
 sub msg_NoVertBar {
-    return "The vertical bar that separates the preassigned truth values for the statement letters from the truth values that you enter is missing in Row $_[0].  Please replace it."
+    return "The vertical bar that separates the preassigned truth values for the statement letters from the truth values that you enter is missing in Row $_[0].  Please restore it."
 }
 
 ###
 sub msg_NoATTVertBar {
     my ($row_num) = @_;
-    return "In Row $row_num, the verticfal bar that separates the truth value assignment area for the list of statement letters to the left of the argument from the truth values that you enter beneath the statement letters and connectives in the argument is missing.  Please replace it."
+    return "In Row $row_num, the verticfal bar that separates the truth value assignment area for the list of statement letters to the left of the argument from the truth values that you enter beneath the statement letters and connectives in the argument is missing.  Please restore it."
 }
 
 ###
 sub msg_MissingTV {
     my ($row_num) = @_;
-    return "A truth value is missing from the truth value assignment in Row $row_num.  Return replace it."
+    return "A truth value is missing from the truth value assignment in Row $row_num.  Please complete it."
 }
 
 ###
@@ -539,6 +548,8 @@ sub msg_ATTValidButtonPressed {
 sub msg_BogusSlash {
     my ($wff,$row_num,$wff_type) = @_;
     my $pretty_wff = &prettify($wff);
+    $pretty_wff = ascii2utf($pretty_wff);
+
     my $tv = "T";
     my $foo = 'the conclusion of the argument in that row';
     if ($wff_type eq 'conclusion') {
@@ -570,14 +581,21 @@ sub msg_TooManyTVs {
 
 ###
 sub msg_IncorrectTV {
-    return "Your assignment of \'<tt>$_[0]</tt>\' to the WFF <center><pre>$_[1]</pre></center> in Row $_[2] is not correct.  Correct this and resubmit your answer.";
+    my ($tv,$wff,$rownum) = @_;
+    $wff = ascii2utf($wff);
+    
+    return "<center>Your assignment of \'<tt>$tv</tt>\' to the WFF <pre>$wff</pre> in Row $rownum is not correct.  Correct this and resubmit your answer.</center>";
 }
 
 ###
 sub msg_IncorrectSubwffTV {
-    return "Your assignment of \'<tt>$_[0]</tt>\' to the subWFF <center><pre>$_[1]</pre></center> of the WFF <center><pre>$_[2]</pre></center> in Row $_[3] is not correct.  Correct this and resubmit your answer.";
+    my ($tv,$subwff,$wff,$rownum) = @_;
+    $wff = ascii2utf($wff);
+    $subwff = ascii2utf($subwff);
+    
+    return "<center>Your assignment of \'<tt>$tv</tt>\' to the subWFF <pre>$subwff</pre> of the WFF <pre>$wff</pre> in Row $rownum is not correct.  Correct this and resubmit your answer.</center>";
 }
 ###
 sub msg_SlashAssignedToConclusion {
-    return "A slash has been assigned to the conclusion of your argument, or to one of its components.  In Layman's system of abbreviated truth tables, one determines the validity or invalidity of an argument by first assigning <tt>F</tt> to a conclusion and, given that, appropriate truth values to its components, if possible.  (This will always be possible in these exercises.)  One then attempts consistently to assign true to all the premises.  Slashes therefore should only occur beneath connectives occurring in premises."
+    return "A slash has been assigned to the conclusion of your argument, or to one of its components.  In the book's system of abbreviated truth tables, one determines the validity or invalidity of an argument by first assigning <tt>F</tt> to a conclusion and, given that, appropriate truth values to its components, if possible.  (This will always be possible in these exercises.)  One then attempts consistently to assign true to all the premises.  Slashes therefore should only occur beneath connectives occurring in premises."
 }

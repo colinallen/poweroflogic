@@ -236,6 +236,8 @@ sub taut_contra_or_contingent {
     my ($tt,$flag) = @_;
     $tt=&cleanup($tt);
     $tt =~ s/\n\n+/\n/g;
+    $tt = ascii2utf($tt);
+
     local $subtitle = "Exercise $probref\n" if $probref;
 
     $cgi->param('prev_chosen',@prev_chosen);
@@ -263,6 +265,8 @@ sub taut_contra_or_contingent {
     print
 	$cgi->startform,
 	"\n";
+
+    $tt = ascii2utf($tt);
     
     print  # start the truth table (surrounded by table-in-table)
 	"<center>\n",
@@ -339,14 +343,14 @@ sub check_form_of_tt {
 
     local $user_arg = $orig_tt;
     $user_arg =~ s/^(.*?)--.*/$1/s;
-    $user_arg =~ s/^.*\|(.*)/$1/;
+    $user_arg =~ s/^.*\|//;
     $user_arg =~ s/\s//g;
+
     local $prob_arg = $pretty_wff;
     $prob_arg =~ s/\s//g;
-
-# xxx
-
+    
     if ($user_arg ne $prob_arg) {
+	print "USER_ARG: $user_arg <br>PROB_ARG: $prob_arg<br>";
 	&pol_template (
 		       $head_CannotFutzWithArg,
 		       &msg_CannotFutzWithArg($probref,$pretty_wff,&prettify($user_arg)),

@@ -11,6 +11,10 @@ require '../MC/mc-common.pl';
 $program  = $cgi->url;
 $fullprog  = $cgi->self_url;
 
+if (!$POL::exercise) {
+    &cant_be_done;
+}
+
 srand; #seed random
 $qsep = "-:-";     # separator b/w questions in $rlqz
 $sep = "::";
@@ -132,7 +136,7 @@ sub generate_random_MCM_quiz {
 ### Print out the form ###
 
     local $subtitle = "Exercise $POL::exercise, Multiple Choice";
-    local $instructions = "";
+    local $instructions = $preamble;
 
     &start_polpage();
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
@@ -145,12 +149,13 @@ sub generate_random_MCM_quiz {
 ### Generate the quiz
 
     print
-	"<table border=0>\n",
 	$cgi->startform(),
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n";
+	#"<table border=0>\n",
+	#"<tr><td align=left>\n",
+	#$preamble,
+	#"</td></tr>\n",
+	#"</table>\n",
+	;
 
     print                       # begin the table that will contain the quiz
 	"<table border=0>\n";    
@@ -290,17 +295,10 @@ sub generate_user_choice_MCM_quiz {
 ### Print out the form ###
 
     local $subtitle = "Exercise $POL::exercise, Multiple Choice";
-    local $instructions = "";
+    local $instructions = $preamble;
 
     &start_polpage('Here\'s Your Quiz!');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
-
-    print
-      "<table border=0>\n",
-      "<tr><td align=left>\n",
-      $preamble,
-      "</td></tr>\n",
-      "</table>\n";
+    &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
 
     print
       $cgi->startform(),
@@ -373,7 +371,7 @@ sub check_answers {
     my @valuetype_names = split(/:/,$valuetype_names);
     my $nextq;
     my $subtitle = "Evaluation of your answers from Exercise&nbsp;$POL::exercise";
-    my $instructions = "";
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">The Logic Tutor responds...</span>";
     my $mailto = 'random';
     my $logstuff = "$POL::logstuff\n\n";
     
@@ -384,10 +382,8 @@ sub check_answers {
     &pol_header($subtitle,$instructions);
 
     print
-	"<table>\n",  # put it all inside a one-cell table
 	startform(),
-	"<tr><td align=left>\n",
-	h2("The Logic Tutor responds:"), 
+	"<table>\n",  # put it all inside a one-cell table
 	"<dl>\n";
 
     my $qnum=0;
@@ -417,11 +413,11 @@ sub check_answers {
 	    $userans =~ s/\s//g;  # to facilitate accurate comparison
 
 	    if ($userans eq $ans) {
-		$logstuff .= "Your answer of ``$raw_userans\'\' is correct!\n";
+		$logstuff .= "Your answer of \'$raw_userans\' is correct!\n";
 		print
                   "<dd>",
                   "<img src=$greentick>&nbsp;",
-                  "<em>Your answer of </em>``$raw_userans\'\'<em> is correct!</em></dd><p>";
+                  "<em>Your answer of &ldquo;</em>$raw_userans&rdquo;<em> is correct!</em></dd><p>";
                 $attempted = 1;
 		next;
 	    } else {
@@ -450,11 +446,11 @@ sub check_answers {
 		next;
 	    }
 
-	    $logstuff .= "Your answer of </em>``$raw_userans\'\'<em> is incorrect.\n";
+	    $logstuff .= "Your answer of ``$raw_userans\'\' is incorrect.\n";
 	    print 
               "<dd>",
 		"<img src=$redx>&nbsp;",
-                  "<em>Your answer of </em>``$raw_userans\'\'<em> is incorrect.</em></dd><p>";
+                  "<em>Your answer of </em>&ldquo;$raw_userans&rdquo;<em> is incorrect.</em></dd><p>";
             $gotit = 0;
             $attempted = 1;
 	    if ($errormsg) {
@@ -593,7 +589,7 @@ sub generate_full_MCM_quiz {
 ### Print out the form ###
 
     local $subtitle = "Exercise $POL::exercise, Multiple Choice";
-    local $instructions = "";
+    local $instructions = $preamble;
 
     &start_polpage();
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header
@@ -606,12 +602,8 @@ sub generate_full_MCM_quiz {
 ### Generate the quiz
 
     print
-	"<table border=0>\n",
 	$cgi->startform(),
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n";
+	;
 
     print                       # begin the table that will contain the quiz
 	"<table border=0>\n";    

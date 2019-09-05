@@ -36,17 +36,30 @@ $prevchosen_string = join "::", keys %prevchosen; # used for menu
 # ADD LOCAL MENU ITEMS HERE
 # $polmenu{"Main Menu"} = "../menu.cgi";
 
-if ($POL::exercise =~ /^(\d+)\./) {
-    $polmenu{"More from Ch. $1"} = "../menu.cgi?chapter=$1";
-    $polmenu{"More from $POL::exercise"} = $cgi->url."?exercise=$POL::exercise&prevchosenstring=$prevchosen_string&do=".time;
-}
-
 $polmenu{'Help with Venn'} = "../help.cgi?helpfile=vennhelp.html"
     if $POL::prob;
 
+
+#$preamble = "INSTRUCTIONS GO HERE";
+if ($POL::exercise =~ /^(\d+)\./) {
+    $polmenu{"More from Ch. $1"} = "../menu.cgi?chapter=$1";
+    $polmenu{"More from $POL::exercise"} = $cgi->url."?exercise=$POL::exercise&prevchosenstring=$prevchosen_string&do=".time;
+
+    # get instructions for this exercise
+    my ($chapter,$foo) = split(/\./,$POL::exercise,2);
+    my $probfile = "$EXHOME$chapter/".$POL::exercise;
+    $probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
+    open(FILE,$probfile) || die("Could not open problem file $probfile");
+    while (<FILE>) {
+	$preamble .= $_ if /^\#!preamble/;	    
+    }
+    close(FILE);
+    $preamble =~ s/\#!preamble//g;
+}
+
 #####################################################
 
-&start_polpage($title);
+&start_polpage($title,$preamble);
 
 if ($POL::prob) {
     $POL::prob = &rot($POL::prob);
@@ -80,7 +93,7 @@ sub checkdiag {
     if ($premcheck and $conccheck) {
 	&pol_header($title);
 	print
-	    $cgi->table({-border=>0, -cellspacing=>0 -cellpadding=>2},
+	    $cgi->table({-border=>0, -cellspacing=>0, -cellpadding=>10, align=>'center'},
 			
 			Tr(td({-width=>80, -align=>'left', -valign=>'top'},
 			      $cgi->strong($subject)),
@@ -88,7 +101,7 @@ sub checkdiag {
 			      $cgi->strong($predicate)),
 			   td({-width=>160})),
 			
-			Tr(td({-width=>80, -align=>'center', -valign=>'top', -colspan=>2},
+			Tr(td({-width=>80, -align=>'center', -valign=>'top', -colspan=>2, -bgcolor=>$VENNBGCOLOR},
 			      strong("Premise"),
 			      "<p>",
 			      "<img src=\"$imagedir/$POL::premimage\" align=\"center\" alt=\"$POL::premimage\">",
@@ -97,17 +110,20 @@ sub checkdiag {
 			      "<p>",
 			      "<img src=\"$imagedir/$POL::concimage\" align=\"center\" alt=\"$POL::concimage\">"),
 			   td({-width=>240, -align=>'left'},
-			      "<font color=\"maroon\">",
+			      "<font color=\"$CORRECTCOLOR\">",
 			      strong("Correct Diagrams"),
 			      "</font>",
 			      "<p>",
 			      $argument,
 			      "<p>",
-			      strong("<font color=\"$LEFTPAGECOLOR\">",
+			      strong("<p>",
 				     "The Venn Diagrams correctly represent the premise and conclusion.",
+				     "<font color=\"$INSTRUCTCOLOR\">",
+				     "</p><p>",
+				     "Now say whether the inference is valid or not.",
 				     "</font>",
-				     "<p>",
-				     "Now say whether the inference is valid or not."),
+				     "</p>",
+			      ),
 
 			      $cgi->startform,
 			      $cgi->hidden('prob'),
@@ -195,7 +211,7 @@ sub redraw {
 sub draw {
     my ($premimage,$concimage) = @_;
 
-    &pol_header($title);
+    &pol_header($title,$preamble);
 
     $argument =~ /(.*?\.)\s*(.*)/;
     $premise = $1;
@@ -209,7 +225,7 @@ sub draw {
 	$cgi->hidden(-name=>'probnum'),
 	$cgi->hidden(-name=>'exercise'),
 	$cgi->hidden('prevchosen'),
-	$cgi->table({-border=>0, -cellspacing=>0, -cellpadding=>5, -align=>'center'},
+	$cgi->table({-border=>0, -width=>600,  -cellspacing=>0, -cellpadding=>10, -align=>'center'},
 		    Tr(
 		       td({-width=>200, -align=>'center', -colspan=>2, -valign=>'top'},
 			  strong("Premise: $premise")),
@@ -217,7 +233,7 @@ sub draw {
 		       td({-width=>300, -align=>'center', -valign=>'top', -rowspan=>4},
 			  "<font color=\"maroon\"><strong>$errmsg</strong></font><br>\n",
 			  "<p>",
-			  "<font color=\"$LEFTPAGECOLOR\">",
+			  "<font color=\"$INSTRUCTCOLOR\">",
 			  strong("Diagram the premise and conclusion of the argument"),
 			  "</font>",
 			  "<p>",
@@ -263,10 +279,10 @@ sub draw {
 sub action_table {
     return $cgi->table({-border=>1, -align=>'center'},
 		       Tr(td({-align=>'center'},
-			     "<font color=\"$LEFTPAGECOLOR\">",
+			     "<font color=\"$INSTRUCTCOLOR\">",
 			     strong("<em>",
-				    "Select action below<br>then click on one of the images at left",
-				    "</em>"),
+				    "Select action below then click on one of the images at left. ",
+			     ),
 			     "</font>\n<br>\n",
 			     $cgi->radio_group(-name=>'action',
 					       -values=>['Shading',
@@ -275,7 +291,12 @@ sub action_table {
 							 'Clear'],
 					       -default=>'Shading',
 					       -onclick=>'this.form.submit()',
-					       -columns=>2))));
+					       -columns=>2),
+			     "<font color=\"$INSTRUCTCOLOR\">",
+			     "<div style=\"font-weight: bold; font-size: 12px;\">",
+			     "(For more instructions see Help menu at left.)",
+			     "</div>\n<br>\n",
+			  )));
 }
 
 sub nextimage {
@@ -286,6 +307,17 @@ sub nextimage {
     # can't shade outside circles
     # well maybe we can do this - how to handle?
     return $image if $region==0;
+# Code stub for above -- basic idea is to use "4" to designate
+# the region outside both circles.  Would need to generate
+# all the gifs (so far 0004.gif exists, but no others.
+#    if ($region==0) {
+#	return "1111.gif";
+#	if ($POL::action =~ /Shading/) {
+#	    return "0000.gif";
+#	} else {
+#	    return "0004.gif";
+#	} 
+#    }
 
     $image =~ /(\d)(\d)(\d)(\d)\.gif/;
     my $s1   = $1;
@@ -357,11 +389,13 @@ sub checkvalidity {
     if ($POL::action eq $validity) {
 	$score = 1;
 	$response = "correct";
+	$responsecolor = $CORRECTCOLOR;
     } else {
         $response = "incorrect. The inference is ".lc($validity);
+	$responsecolor= $INSTRUCTCOLOR;
     }
     print
-	"<table border=0 cellspacing=0 cellpadding=2>\n",
+	"<table border=0 cellspacing=0 cellpadding=10 align=\"center\">\n",
 	"<tr><td width=80 align=left valign=top>\n",
 	"<strong>$subject</strong>\n",
 	"</td><td width=80 align=right valign=top>\n",
@@ -370,17 +404,20 @@ sub checkvalidity {
 	"</td></tr>\n",
 	"<tr><td width=160 align=center valign=top colspan=2>\n",
 	strong("Premise"),
-	"<p>",
+	"<div style=\"background-color:$VENNBGCOLOR\">",
 	"<img src=$imagedir/$POL::premimage align=center>",
-	"<p>",
+	"</div>",
+	"<div style=\"\">",
 	strong("Conclusion"),
-	"<p>",
+	"</div>",
+	"<div style=\"background-color:$VENNBGCOLOR\">",	
 	"<img src=$imagedir/$POL::concimage align=center>",
+	"</div>",
 	"</td>\n",
 	"<td width=240 align=center>\n",
 	$syllogism,
 	"\n<br>\n",
-	"<font color=\"maroon\">\n",
+	"<font color=\"$responsecolor\">\n",
 	strong("Your answer of \"$POL::action\" is $response."),
 	"</font>\n",
 	"\n<p>\n",
@@ -396,14 +433,15 @@ sub checkvalidity {
     &pol_footer;
 
 
-   # send result to page out
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata) {
-	$pageoutdata{'vendor_assign_id'} = $POL::exercise;
-	$pageoutdata{'assign_probs'} = [ $POL::probnum, 34, 23 ];
-	$pageoutdata{'student_score'} = [ $score, 1, 0 ];
-	&send_to_pageout(%pageoutdata);
-    }
+    # send result to page out
+    # we don't do this any more
+#    my %pageoutdata = %pageoutid;
+#    if (%pageoutdata) {
+#	$pageoutdata{'vendor_assign_id'} = $POL::exercise;
+#	$pageoutdata{'assign_probs'} = [ $POL::probnum, 34, 23 ];
+#	$pageoutdata{'student_score'} = [ $score, 1, 0 ];
+#	&send_to_pageout(%pageoutdata);
+#    }
 }
 
 ## following not currently in use - 6.5.2002 - CA
@@ -419,12 +457,14 @@ sub random_pick {
 	$probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
         open(FILE,$probfile) || die("Could not open problem file $probfile");
         while (<FILE>) {
+	    $preamble .= $_ and next if /^\#!preamble/;	    
             next if /^\#|^\w*$/;
             chomp;
             push @questions, $_;
         }
         close(FILE);
-
+	$preamble =~ s/\#!preamble//g;
+	
 	## now we random pick
 	if (@POL::prevchosen >= @questions) {           # If user has already been quizzed on all 
 	    $cgi->delete('prevchosen');                # of the questions, make prevchosen nil;

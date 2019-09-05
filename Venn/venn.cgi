@@ -97,21 +97,32 @@ if ($POL::exercise and $POL::prob) { # add menu items
     my $query = $cgi->url;
     $query .= "?exercise=$POL::exercise";
     $query .= "&prevchosenstring=$prevchosen_string" if $prevchosen_string;
-# uncomment the next line if you need unique behavior rather than full menu
-#    $query .= "&msfoo=".rand if $cgi->user_agent  =~ /msie/;
+
     $polmenu{"More from Ex. $POL::exercise"} = $query;
+
+    my ($chapter,$foo) = split(/\./,$POL::exercise,2);
+    my $probfile = "$EXHOME$chapter/".$POL::exercise;
+    $probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
+    open(FILE,$probfile) || &html_error("Could not open problem file $probfile");
+    while (<FILE>) {
+	$preamble .= $_ and next if /^\#!preamble/;
+	next if /^\#|^\w*$/;
+	chomp;
+	push @problems, $_;
+    }
+    close(FILE);
+    $preamble =~ s/\#!preamble//g;
+    $instructions .= $preamble;
     
 }
 #####################################################
 
-&start_polpage($title);
-
 if (!$POL::prob) {
+    &start_polpage($title);
     &picksyll;
 } else {
-
     if ($POL::prob eq 'yes') {
-	
+	&start_polpage($title,$instructions);
 	$POL::prob  = $prem1{$POL::prem1} . ". ";
 	$POL::prob .= $prem2{$POL::prem2} . ". ";
 	$POL::prob .= $conc{$POL::conc} . ".";
@@ -122,6 +133,8 @@ if (!$POL::prob) {
 	
 	$cgi->param('prob',&rot($POL::prob));
     } else {
+	#need instructions?
+	&start_polpage($title,$preamble);
 	$POL::prob = &rot($POL::prob);
     }
     
@@ -143,7 +156,7 @@ if (!$POL::prob) {
     } else { # 2 circle problem
 	$imagedir="/Images/Venn2";
 	if ($POL::action =~/Check/) {
-	    &twocirc_checkdiag($majorterm,$minorterm,$syllogism);;
+	    &twocirc_checkdiag($majorterm,$minorterm,$syllogism);
 	} elsif ($POL::action =~ /valid/i) {
 	    &checkvalidity;
 	} elsif ($POL::action =~ /Shad|Partic/) {
@@ -165,7 +178,7 @@ sub checkdiag {
 	&diag_eq($POL::image,$diag)) {
 	&pol_header($title);
 	print
-	    table({-border=>0,-cellspacing=>0,-cellpadding=>5},
+	    table({-border=>0,-cellspacing=>0,-cellpadding=>5,-align=>'center'},
 		  Tr(td({-width=>80,-align=>'left',-valign=>'top',-bgcolor=>$VENNBGCOLOR},
 			$cgi->strong($majorterm)),
 		     td({-width=>80,-align=>'right',-valign=>'top',-bgcolor=>$VENNBGCOLOR},
@@ -321,7 +334,7 @@ sub checkvalidity {
 
 	print
 	    "<center>",
-	    table({-border=>0},
+	    table({-border=>0,-bgcolor=>$VENNBGCOLOR},
 		  Tr(td({-align=>'left'},
 			$cgi->strong($majorterm)),
 		     td({-align=>'right'},
@@ -333,7 +346,9 @@ sub checkvalidity {
 	    "<p>",
 	    "$syllogism",
 	    "<p>\n",
+	    "<font color=\"$CORRECTCOLOR\">",
 	    "<strong>You correctly answered that the syllogism is $guess.</strong>\n",
+	    "</font>",
 	    &restart,
 	    "</center>";
 
@@ -346,7 +361,7 @@ sub checkvalidity {
         &pol_header("$title");
 
         print
-            table({-border=>0,-cellspacing=>0,-cellpadding=>2},
+            table({-border=>0,-width=>600, -cellspacing=>0,-cellpadding=>2,-align=>'center'},
 		  Tr(td({-width=>80,-align=>'left',-valign=>'top'},
 			"<strong>$majorterm</strong>\n"),
 		     td({-width=>80,-align=>'right',-valign=>'top'},
@@ -408,7 +423,7 @@ sub draw {
 
     $cgi->delete('image');
 
-    &pol_header($title);
+    &pol_header($title,$instructions);
 
     $errmsg = "<font color=\"maroon\"><strong>$errmsg</strong></font><br>" if $errmsg;
     
@@ -419,7 +434,7 @@ sub draw {
 	$cgi->hidden(-name=>'probnum'),
 	$cgi->hidden(-name=>'prevchosen'),
 	$cgi->hidden(-name=>'exercise'),
-	table({-border=>0,-cellspacing=>0,-cellpadding=>2,-align=>'center'},
+	table({-border=>0,-width=>600, -cellspacing=>0,-cellpadding=>2,-align=>'center'},
 	      Tr(td({-width=>100,-align=>'left',-valign=>'top',-bgcolor=>$VENNBGCOLOR},
 		    "<strong>$majorterm</strong>\n"),
 		 td({-width=>100, -align=>'right',-valign=>'top',-bgcolor=>$VENNBGCOLOR},

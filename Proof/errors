@@ -1,6 +1,6 @@
 # Error messages for proof checker
-$ERRORHEAD = "\n".'<font color="red">'."\n";
-$ERRORFOOT = "\n</font>\n";
+$ERRORHEAD = "\n".'<div style="color: red; padding:0px 0px 0px 00px">'."\n";
+$ERRORFOOT = "\n</div>\n";
 
 # general proof errors
 $NOTWFF = " is not a wff in the formal logical language.";

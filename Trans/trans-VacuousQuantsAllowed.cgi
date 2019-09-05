@@ -391,7 +391,7 @@ Your symbolization</em> &lsquo;<tt>$pretty_user_trans</tt>&rsquo; <em>of the sen
     &pol_header($subtitle,$instructions); # create outer table, print the PoL header
     
     print
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"/5e/javascript/replace.js\" charset=\"UTF-8\"></script>",
 	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('user_trans'))");
 	
     print
@@ -732,7 +732,7 @@ sub do_pageout {
 sub html_error { # dirty exit
     my ($err_msg) = @_;
 
-#    &mailit("webmaster\@poweroflogic.com",$err_msg);
+#    &mailit("logic.pedallers\@gmail.com",$err_msg);
     &start_polpage("Error");
     &pol_header("ERROR");
     print

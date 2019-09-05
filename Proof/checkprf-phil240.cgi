@@ -180,7 +180,7 @@ sub proofcheckform {
     $cgi->delete('answer'); # prevent old value replacing new value
     print # column 2 proof text area
 	"<td align=left>\n",
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"/5e/javascript/replace.js\" charset=\"UTF-8\"></script>",
 	"<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"answer\" name=\"answer\" rows=20 cols=$cols style=\"font-family: monospace\">",
 	ascii2utf_html($answer),
 	  "</textarea>",

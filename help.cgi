@@ -106,7 +106,7 @@ sub html_error { # dirty exit
 	"</center>",
         $cgi->Dump;
     &pol_footer();
-    &mailit('webmaster@poweroflogic.com',$err_msg);
+    &mailit('logic.pedallers@gmail.com',$err_msg);
     &end_polpage;
 }
 

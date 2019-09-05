@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # quiz-generator.pl
 # General code for generating multiple choice quizzes for various exercise types
-# Menzel created the file on 4 Jun 02; who know who wrote what at this point...
+# Menzel created the file on 4 Jun 02; who knows who wrote what at this point...
 
 ############################################################
 sub choose_quiz_type {
@@ -12,12 +12,12 @@ sub choose_quiz_type {
     my @prev_chosen;
 
     &start_polpage('Choose a quiz type!');  
-    &pol_header($subtitle);
+    &pol_header($subtitle,$instructions);
 
     print
 	"<table border=0><!--begin instructions table-->\n",    # table for the instructions
 	"<tr><td align=left>\n",
-	$instructions,
+	#$instructions,
 	"</td></tr>\n",
 	"</table><!--end instructions table-->\n",              # end of table for instructions
 	"<center>",
@@ -61,7 +61,7 @@ sub pick_probs {
     my $ex = $exercise;
     $ex =~ s/i//g;
     my $subtitle = "";
-    my $instructions = "Choose the sentences you\'d like to be quizzed on and click on the button below, or on one of the small images to the left of the problems, to generate your quiz!";
+    my $instructions = "Choose the items you\'d like to be quizzed on and click on the button below, or on one of the small images to the left of the problems, to generate your quiz!";
     my $instructions3 = "\<img src=$smallgreyPoLogo\> = previously selected during this session.";
     
     my @problems;
@@ -96,13 +96,13 @@ sub pick_probs {
     $subtitle = "Exercise $ex";
 
     &start_polpage('Pick argument');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
+    &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
 
     print
       "<table border=0>\n",
       "<tr><td align=left>\n",
       "<strong><font color=$LEFTPAGECOLOR>",
-      $instructions,
+      #$instructions,
       "</font></strong>",
       "</td></tr>";
 

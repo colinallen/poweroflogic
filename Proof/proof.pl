@@ -28,7 +28,7 @@ while (<>) {
     s/\s//g;     #eliminated white space
     next if !$_; #skip blank lines
     
-    &error("Error:<pre>$rawline</pre>".
+    &error("Error:<pre>".ascii2utf_html($rawline)."</pre>".
 	   "Every line of proof must be properly numbered.")
 	unless /^\|*\d+|\.:|:\./;
 
@@ -79,7 +79,7 @@ while ($prems) {
 	my $errmsg=$NOTWFF;
 	$errmsg.=$NUMINWFF if $nextprem=~/\d/;
 	$errmsg.=$NOCAPS if $nextprem !~ /[A-Z]/;
-	&error("Premise '$nextprem' ",$errmsg);
+	&error("Premise '".ascii2utf_html($nextprem)."'",$errmsg);
     }
 }
 
@@ -87,7 +87,7 @@ while ($prems) {
 if (not &wff($conclusion)) {
     my $errmsg=$NOTWFF;
     $errmsg=$NOCAPS if $conclusion !~ /[A-Z]/;
-    &error("Conclusion '$conclusion' ",$errmsg);
+    &error("Conclusion '".ascii2utf_html($conclusion)."'",$errmsg);
 }
 
 # CHECK EACH LINE OF PROOF
@@ -112,19 +112,20 @@ foreach $line (@proof) {
     &error(&badline($indent,$linenumber,$sentence,$annote),
 	   $DOUBLECONC)
 	if $line =~ /\.:|:\./;
-
+    
     # CHECK SENTENCE EXISTS
     &error(&badline($indent,$linenumber,$sentence,$annote),
-	   $sentence,$NOSENT)
+	   ascii2utf_html($sentence),$NOSENT)
 	if $sentence =~ /^\s*$/;
-
+    
     # CHECK RULE IS CITED
     if ($annote =~ /^[\d,]*$/ and !&ispremise($sentence,$premises)) {
 	if (!&wff($sentence)) {
-	    &error(&badline($indent,$linenumber,$sentence,$annote),$BADFORMAT);
+	    &error(&badline($indent,$linenumber,$sentence,$annote),
+		   $BADFORMAT);
 	} else {
 	    &error(&badline($indent,$linenumber,$sentence,$annote),
-		   $sentence,$NOTPREM);
+		   ascii2utf_html($sentence),$NOTPREM);
 	}
     }
     
@@ -135,7 +136,7 @@ foreach $line (@proof) {
 	$errmsg.=$WFFZERO if $sentence=~/0/;
 	$errmsg.=$NOCAPS if $sentence !~ /[A-Z]/;
 	&error(&badline($indent,$linenumber,$sentence,$annote),
-	       $sentence,$errmsg);
+	       ascii2utf_html($sentence),$errmsg);
     }
 
     # CHECK ASSUMPTIONS
@@ -227,7 +228,7 @@ print
     "The proof is incomplete. The ",
     &wff($conclusion),
     " ",
-    $conclusion,
+    ascii2utf_html($conclusion),
     " remains unproven.\n";
 
 # SUBROUTINE TO CHECK MEMBERSHIP IN PREMISES
@@ -248,9 +249,8 @@ sub ispremise {
 # go elsewhere
 
 # SUBROUTINE TO REPORT LOGIC ERRORS
-sub error {
+sub error { # ERRORHEAD and ERRORFOOT are in the error file
     print $ERRORHEAD;
-    
     foreach $string (@_) {
 	print "$string";
     }
@@ -292,21 +292,16 @@ sub format_line {
     ##offset for non-printed chars from unicode translation (e.g. -> becomes &#8310;)
     $offset = length(ascii2utf_html($sent)) - length($sent)
 	+ (ascii2utf_html($sent) =~ tr/&//);  #add 1 for each translated character
-#    $result .= $sent;
     $offset+=30; #add 30 for the first packing
     $result = pack "A$offset", $result # up to 36 spaces
 	if length($result) < $offset; 
     $result .= $nums . ", " if $nums;
     my $ruleinput=uc(&get_rule($ann));
-    ####$result .= "*|$ruleinput|*"; #debug
     $ruleinput=$rule_aliases{$ruleinput} if $rule_aliases{$ruleinput};
     $result .= $implemented{$ruleinput}; # canonical form
 	$offset+=10; #Add 10 more to bring us up to 40 spaces
     $result = pack "A$offset", $result #
 	if length($result) < $offset; 
-    if ($wfftype = &wff($sent)) {
-	$result .= " [".substr($wfftype,0,4)."]";
-    }
     $result .= "\n";
     return $result;
 }

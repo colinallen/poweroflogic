@@ -85,13 +85,8 @@ sub pick_att {
 	"</table>\n";
 
     if (@prev_chosen) {
-            print            # Note that $smallgreyPoLogo indicates previous selection
-              "<table border=0>\n",
-              "<tr><td align=left>\n",
-              "<img src=$smallgreyPoLogo> = <font size=-2>previously selected in this session</font>\n",
-              "</td></tr>\n",
-              "</table>\n";
-        }
+            print $PREVCHOICEINSTRUCTION;       # Note that $smallgreyPoLogo indicates previous selection
+    }
 
     print                                   # create a table containing all the problems in the exercise
 	"<table width=100% border=0>\n";
@@ -203,7 +198,7 @@ sub att_form {
     $cols = $row_1_length+8;
     print # Only row contains the truth table in a textarea
 	"<tr><td align=left>\n",
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>",
 	"<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"att\" name=\"att\" rows=6 cols=$cols style=\"font-family: monospace\">",
 	ascii2utf_html($att_template),
 	"</textarea>",

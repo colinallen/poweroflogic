@@ -15,6 +15,8 @@ sub pol_template {
     my ($head,$msg,$probref,$function) = @_;
 
     my $subtitle = "Exercise $probref";
+    $subtitle = "Create your own truth table" unless $probref;
+    
     my $instructions = "";  # This standard parameter for pol_header won't be used here
     &pol_header($subtitle,$instructions,450);
 

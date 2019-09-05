@@ -57,7 +57,7 @@ sub pick_att {
     my ($chapter) = split(/\./,$POL::exercise,2);
     my $probfile = "$EXHOME$chapter/$POL::exercise";
     my $subtitle = "Exercise $POL::exercise".": Abbreviated Truth Tables";
-    my $instructions = "<center><strong><font color=$LEFTPAGECOLOR>Pick an argument to work on!</font></strong></center>";
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">Pick an argument to work on!</span>";
     my $preamble = "";
     
     $cgi->delete('att'); # delete any previous selection
@@ -72,25 +72,14 @@ sub pick_att {
     }
     close(FILE);
     $preamble =~ s/\#!preamble//g;
+    $instructions .= "<br>".$preamble;
 
     &start_polpage('Choose an argument');
-    &pol_header($subtitle);  # create outer table, print the PoL header and instructions
+    $instructions .=  $PREVCHOICEINSTRUCTION    # Note that $smallgreyPoLogo indicates previous selection
+	if @prev_chosen;
 
-    print                                   # Print the preamble in the probfile
-	"<table border=0>\n",
-	"<tr><td align=left>\n",
-	 $preamble,
-	"</td></tr>\n",
-	"</table>\n";
+    &pol_header($subtitle, $instructions);  # create outer table, print the PoL header and instructions
 
-    if (@prev_chosen) {
-            print            # Note that $smallgreyPoLogo indicates previous selection
-              "<table border=0>\n",
-              "<tr><td align=left>\n",
-              "<img src=$smallgreyPoLogo> = <font size=-2>previously selected in this session</font>\n",
-              "</td></tr>\n",
-              "</table>\n";
-        }
 
     print                                   # create a table containing all the problems in the exercise
 	"<table width=100% border=0>\n";
@@ -187,7 +176,7 @@ sub att_form {
     }
 
     $subtitle = "Exercise $POL::exercise Problem $POL::problem_num\n" if $POL::exercise;
-    $instructions = "<center><strong><font color=\"$INSTRUCTCOLOR\">Construct an abbreviated truth table!</font></strong></center>\n"; # unless $answer;
+    $instructions = "<strong><font color=\"$INSTRUCTCOLOR\">Construct an abbreviated truth table!</font></strong>\n"; # unless $answer;
 
     &start_polpage('Power of Logic: Abbreviated Truth Tables') if not $flag;
     &pol_header($subtitle,$instructions) if not $flag;
@@ -203,9 +192,9 @@ sub att_form {
     $cols = $row_1_length+8;
     print # Only row contains the truth table in a textarea
 	"<tr><td align=left>\n",
-	"<script language=\"javascript\" type=\"text/javascript\" src=\"/4e/javascript/replace.js\" charset=\"UTF-8\"></script>",
+	"<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>",
 	"<textarea onSelect=\"\" onkeyup=\"process(this)\" id=\"att\" name=\"att\" rows=6 cols=$cols style=\"font-family: monospace\">",
-	ascii2utf_html($att_template),
+	ascii2utf_html($POL::att or $att_template),
 	"</textarea>",
 	"</td></tr>\n";
     
@@ -239,7 +228,8 @@ sub att_form {
 sub roll_yer_own_att {
 
     local $subtitle = 	"Create your own truth table",
-    local $instructions = "<center><strong><font color=$LEFTPAGECOLOR>Enter an argument in the area below.<br>Click below to create an empty truth table for it.</font></strong></center>";
+    local $instructions = "<center><strong>This feature is not supported for abbreviated truth tables.</strong></center>";
+#    local $instructions = "<center><strong><font color=$LEFTPAGECOLOR>Enter an argument in the area below.<br>Click below to create an empty truth table for it.</font></strong></center>";
 
     &start_polpage;
     print
@@ -247,16 +237,16 @@ sub roll_yer_own_att {
 
     &pol_header($subtitle,$instructions);
 
-    print
-	"<center>\n",
-	"<p>",
-	$cgi->textfield(-name=>'user_argument',
-			-style=>'font-family: monospace',
-			-size=>50,-default=>''),
-	"<br>",
-	$cgi->submit(-name=>'action',-value=>'Make the truth table!'),
-	$cgi->endform,
-	"</center>";
+    # print
+    # 	"<center>\n",
+    # 	"<p>",
+    # 	$cgi->textfield(-name=>'user_argument',
+    # 			-style=>'font-family: monospace',
+    # 			-size=>50,-default=>''),
+    # 	"<br>",
+    # 	$cgi->submit(-name=>'action',-value=>'Make the truth table!'),
+    # 	$cgi->endform,
+    # 	"</center>";
 
     &footer();
 

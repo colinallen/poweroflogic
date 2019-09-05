@@ -78,7 +78,7 @@ $polmenu{'Help with Venn'} = "../help.cgi?helpfile=vennhelp.html"
 print # beginning of response page
     header(-Pragma=>"no-cache"),
     start_html(-title=>"$title",
-	       -author=>'webmaster@www.poweroflogic.com',
+	       -author=>'logic.pedallers@gmail.com',
 	       -meta=>{'keywords'=>'logic venn predicate',
 		       'copyright'=>'copyright 2002-2003 Logic Pedallers'},
 	       -bgcolor=>$LEFTPAGECOLOR,

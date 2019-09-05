@@ -211,17 +211,18 @@ sub generate_chapter_menu { # this is the main menu
 	"<table style=\"width: 700px; padding: 5px; margin: 5px; border: 1px solid black; background: $WORKSPACEBGCOLOR\"><!--begin probs-->\n";
 
     print # banner and separator
-	"<tr><td colspan=\"4\" style=\"text-align: center; background-color: $HEADERBGCOLOR; padding: 4px\">",
-	"<img src=\"$polcsl\" width=\"600\">",
+	"<tr><td colspan=\"4\" style=\"text-align: left; background-color: $HEADERBGCOLOR; padding: 4px\">",
+	"<img src=\"/6ebeta/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 150px; margin-top: 2px; float: right\"/>",
+	h1("Chapter Menu"),
+	"<img src=\"$polcsl\" width=\"600\" alt=\"$EDITION banner image\">",
 	"</td></tr>",
 	"<tr><td colspan=\"4\" align=\"center\">",
-	"<hr>",
 	"</td></tr>",
 	;
     
     my $left=1;
     foreach $item (@chapternums) { # two column mode
-	## temporary throttle -- installed until MH pays up!
+	## temporary throttle -- install until MH pays up!
 	#next if ($site =~ /poweroflogic/ && $item =~ /\d/ && $item > 7);
 	my $rawtitle = $chapters{$item};
 	my ($title,$subtitle) = split(/:/,$rawtitle,2);
@@ -258,7 +259,7 @@ sub generate_exercise_menu {
 
     require "$EXHOME$CHAPNUM/$CONTENTS"; # now we can use %chapter
     local $subtitle = "Exercises for $chapter{'title'}";
-    local $instructions = "<h3 style=\"color: $INSTRUCTCOLOR\">Select an exercise</h3>";
+    local $instructions = "<h3 style=\"color: $INSTRUCTCOLOR;\">Select an exercise</h3>";
     my $secnums = $chapter{'sections'};
 
 #header
@@ -372,7 +373,7 @@ sub ryo_selection {
 sub html_error { # dirty exit
     my ($err_msg) = @_;
 
-#    &mailit("webmaster\@poweroflogic.com",$err_msg);
+#    &mailit("logic.pedallers\@gmail.com",$err_msg);
     &start_polpage("Error");
     &pol_header("ERROR");
     print

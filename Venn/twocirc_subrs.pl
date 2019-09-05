@@ -1,20 +1,23 @@
 ########################### subroutines ###########################
 sub twocirc_checkdiag {
-    my ($subject,$predicate,$statement) = @_;
+    my ($subject,$predicate,$statement,$title) = @_;
     my $output =
 	"Compare guess='$POL::image' to answer='$diag'\nfor $statement\n";
+    $title = "Venn Diagrams" unless $title;
 
+    
     if (&twocirc_diag_eq($POL::image,$diag)) {
 	&pol_header($title);
+	print "<div align=\"center\">";
 	print
-	    "<table border=0 cellspacing=0 cellpadding=5>",
+	    "<table style=\"border:0px; cellspacing:0px; cellpadding:10px; align:center\">",
 	    Tr(td({-width=>80, -align=>'left',
 		   -valign=>'top', -bgcolor=>$VENNBGCOLOR},
 		  $cgi->strong($subject)),
 	       td({-width=>80, -align=>'right',
 		   -valign=>'top', -bgcolor=>$VENNBGCOLOR},
 		  $cgi->strong($predicate)),
-	       td({-width=>160},
+	       td({-width=>260,-valign=>'top'},
 		  "<font color=maroon>",
 		  $cgi->strong("Correct Diagram"),
 		  "</font>")),
@@ -22,17 +25,15 @@ sub twocirc_checkdiag {
 	    Tr(td({-width=>80,-align=>'center',-valign=>'top',
 		   -colspan=>2, -bgcolor=>$VENNBGCOLOR},
 		  "<img src=\"$imagedir/$POL::image\" align=\"center\" alt=\"$POL::image\">"),
-	       td({-width=>240, -align=>'left'},
+	       td({-width=>340, -align=>'left'},
 		  $statement)),
 	    ;
 
 	if ($syllogism =~ /<br>/i) { # syllogism
 	    print
-		Tr(td({-width=>160,-align=>'center',
-		       -valign=>'top',-colspan=>2},
-		      "&nbsp;"),
-		   td({-width=>240, -align=>'left'},
-		      "<font color=$LEFTPAGECOLOR><strong>\n",
+		Tr(td({-width=>500,-align=>'center',
+		       -valign=>'top',-colspan=>3},
+		      "<font color=$INSTRUCTCOLOR><strong>\n",
 		      "The Venn Diagram correctly represents the syllogism's premise(s).\n",
 		      "Now indicate whether the syllogism is valid.\n",
 		      "</strong></font>\n<p>",
@@ -49,11 +50,9 @@ sub twocirc_checkdiag {
 	      
 	} else { #statement only
 	    print
-		Tr(td({-width=>160,-align=>'center',
-		       -valign=>'top',-colspan=>2},
-		      "&nbsp;"),
-		   td({-width=>240, -align=>'left'},
-		      "<font color=$LEFTPAGECOLOR>",
+		Tr(td({-width=>500,-align=>'center',
+		       -valign=>'top',-colspan=>3},
+		      "<font color=$INSTRUCTCOLOR>",
 		      $cgi->strong("The Venn Diagram correctly represents the statement."))),
 		Tr(td({-colspan=>3,-align=>center},
 		      $cgi->startform,
@@ -73,6 +72,7 @@ sub twocirc_checkdiag {
 
 	}
 	print "</table>";
+	print "</div>";
 	&pol_footer;
 
     } else {
@@ -145,8 +145,9 @@ sub twocirc_redraw {
 sub twocirc_draw {
     my ($subject,$predicate,$statement,$newimage,$title) = @_;
     $cgi->delete('image');
-
-    &pol_header($title);
+    $title = "Venn Diagrams" unless $title;
+    
+    &pol_header($title,$preamble);
 
     my $type = 'statement';
     $type = 'premise(s)' if $statement =~ /<br>/i;
@@ -157,13 +158,13 @@ sub twocirc_draw {
 	$cgi->hidden(-name=>'probnum'),
 	$cgi->hidden(-name=>'exercise'),
 	$cgi->hidden(-name=>'prevchosen'),
-	table({-border=>0,-cellspacing=>0,-cellpadding=>5,-align=>'center'},
+	table({-border=>0,-cellspacing=>0,-cellpadding=>10,-align=>'center'},
 	      Tr(td({-width=>100,-align=>'left',-valign=>'top',-bgcolor=>$VENNBGCOLOR},
 		    $cgi->strong($subject)),
 		 td({-width=>100,-align=>'right',-valign=>'top',-bgcolor=>$VENNBGCOLOR},
 		    $cgi->strong($predicate)),
 		 td({-width=>200,-align=>'center',-valign=>'top'},
-		    "<font color=$LEFTPAGECOLOR>",
+		    "<font color=$INSTRUCTCOLOR>",
 		    $cgi->strong("Diagram the $type"),
 		    "</font>",
 		    "<br>",
@@ -179,7 +180,7 @@ sub twocirc_draw {
 		    "<p>",
 		    table({-border=>1,-align=>'center'},
 			  Tr(td({-align=>'center'},
-				"<font color=$LEFTPAGECOLOR>",
+				"<font color=$INSTRUCTCOLOR>",
 				"<strong><em>\n",
 				"Select action below",
 				"<br>",
@@ -285,11 +286,16 @@ sub picksyll {
     $cgi->delete('syllogism'); # delete any previous selection
 
     # html out
-    &pol_header($title);
-    
+    my $instructions = "<span style=\"color: $INSTRUCTCOLOR; font-weight: bold\">Pick a syllogism to diagram</span>";
+
+    $instructions .= $PREVCHOICEINSTRUCTION
+	if @POL::prevchosen;
+
+
     if (!$POL::exercise) {
+	&pol_header($title, $instructions);
 	print
-	    "<center><strong>Construct a syllogism</strong></center>\n<br>\n",
+	    "<strong>Construct a syllogism</strong>\n<br>\n",
 	    $cgi->startform,
 	    table({-width=>'100%',-border=>0},
 		  Tr(td({-valign=>'top',-align=>'right',-width=>'35%'},
@@ -322,7 +328,6 @@ sub picksyll {
 	my ($chapter,$foo) = split(/\./,$POL::exercise,2);
 	my $probfile = "$EXHOME$chapter/".$POL::exercise;
 
-	$probfile =~ s/\||\.\.//g; # close pipeline exploit; CA 9-17-2004
 	open(FILE,$probfile) || die("Could not open problem file $probfile");
 	while (<FILE>) {
 	    next if /^\#|^\w*$/;
@@ -330,22 +335,9 @@ sub picksyll {
 	    push @problems, $_;
 	}
 	close(FILE);
-	
-	# html out
 
-	print
-	    table({-border=>0},
-		  Tr(td({-align=>'left',-colspan=>2},
-			"<font color=$LEFTPAGECOLOR>",
-			strong("Pick exercise to diagram"),
-			"</font>",
-			)),
-		  Tr(td({-align=>'left',-valign=>'middle',-width=>15},
-			"<img src=\"$smallgreyPoLogo\">"),
-		     td({-align=>'left',-valign=>'middle'},
-			"<font size=\"-2\">",
-			"= previously selected during this session",
-			"</font>")));
+	# html out
+	&pol_header($title, $instructions);
 
 	print "<table width=100%>";
 	
@@ -353,6 +345,22 @@ sub picksyll {
 	my $program = $cgi->self_url;
 	foreach $problem (@problems) {
 	    ++$count;
+	    if ($problem =~ /unavailable/i) {
+		print
+		    Tr(td({-valign=>'top',-align=>'left'},
+			  $cgi->image_button(-name=>'void',
+					     -src=>$smallgreyPoLogo)),
+		       td({-valign=>'top',-bgcolor=>'#dddddd'},
+			  "<font size=\"-1\">",
+			  strong("#$count"),
+			  "</font>"),
+		       td({-valign=>'top'},
+			  "<font size=-1>\n",
+			  em("This problem is currently unavailable"),
+			  "</font>"));
+		next;
+	    }
+
 	    my ($syllogism,$foo) = split("::",$problem,2);
 	    my $button_image = $prevchosen{$count} ? $smallgreyPoLogo : $smallPoLogo;
 
