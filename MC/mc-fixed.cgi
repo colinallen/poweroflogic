@@ -5,7 +5,6 @@
 ## ver 0.1, 15 Sept 98
 ## Currently still pretty messy...
 ## ver 0.2  17 June 02
-## Added pageout functionality; lots of clean up
 
 $ENV{PATH} = "/bin:/usr/bin";
 delete @ENV{ 'IFS', 'CDPATH', 'ENV', 'BASH_ENV' };
@@ -26,10 +25,11 @@ if (!$POL::exercise) {
 
 @questions;
 @prev_chosen = ();
-push (@prev_chosen, @POL::prev_chosen) if ($POL::prev_chosen[0]); # for some reason, length of @prev_chosen = 1 
-                                                                  # (even though the list itself appears empty when printed)
-                                                                  # if @POL::prev_chosen is empty, so can't use
-                                                                  # (@POL::prev_chosen) as test
+push (@prev_chosen, @POL::prev_chosen) if ($POL::prev_chosen[0]); 
+
+# for some reason, length of @prev_chosen = 1 (even though the list
+# itself appears empty when printed) if @POL::prev_chosen is empty, so
+# can't use (@POL::prev_chosen) as test
 
 ####################################################
 # ADD LOCAL MENU ITEMS HERE
@@ -278,7 +278,6 @@ sub generate_user_choice_MC_quiz {
     $subtitle .= $POL::exercise;
 
     &start_polpage('Here\'s Your Quiz!');
-    print "<script language=\"javascript\" type=\"text/javascript\" src=\"$JSDIR/replace.js\" charset=\"UTF-8\"></script>";
 
     &pol_header($subtitle,$preamble);  # create outer table, print the PoL header and instructions
 
@@ -350,14 +349,13 @@ sub user_choice_MC_answer_form {
 
     my $uques = $ques; 
 
-    # here we recode ascii version of logical symbols as utf
+    # here we recode  ascii version of logical symbols as utf
     if ($uques =~ /^<tt>(.*)<\/tt>$/) {
 	my $form = $1;
 	$form =~ s/&gt;/>/g;
 	$form =~ s/&lt;/</g;
+	$form = &prettify($form);
 	$uques = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span>";
-    } else {
-	#$uques = ascii2utf_html($uques);
     }
 
     
@@ -509,25 +507,8 @@ sub check_answers {
       $cgi->endform,
       "</center>\n";
     
-# DEBUG
-#    print "probs_attempted: @probs_attempted<br>";
-#    print "student_answers: @student_answers<br>";
-# END DEBUG
-
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata && @probs_attempted && @student_answers) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ @probs_attempted ];
-        $pageoutdata{'student_score'} =[ @student_answers ];
-        &send_to_pageout(%pageoutdata);
-    }
-
     &pol_footer;
-    &mailit($mailto,$logstuff);
     &end_polpage;
-
-#    &footer();
-#    &bye_bye;
 }
 
 

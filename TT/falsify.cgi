@@ -15,7 +15,6 @@ require "./check-validity.pl";
 
 $debug=1;
 $program = $cgi->url;
-local %pageoutdata = %pageoutid;
 
 $POL::exercise="7.2C"; # should not be hardcoded
 
@@ -281,26 +280,6 @@ sub process_user_argument {
     &tt_form($conclusion);
 }
 
-###
-sub prettify_argument {
-    $arg = $_[0];
-    $arg =~ s/([^:])\. /$1\+ /g;
-    $arg =~ s/([^:])([\.v]|->|<->)([^:])/$1 $2 $3/g;  # add spaces b/w binary connectives
-#    $arg =~ s/\+/\./g;
-    $arg =~ s/\+/&nbsp;/g;
-    return $arg;
-}
-
-###
-sub do_pageout {
-    my ($exercise,$probnum,$score) = @_;
-    if (%pageoutdata) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ $probnum ];
-        $pageoutdata{'student_score'} =[ $score ];
-        &send_to_pageout(%pageoutdata);
-    }
-}
 
 ############################################################
 sub html_error { # dirty exit

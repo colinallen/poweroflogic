@@ -162,7 +162,6 @@ sub evaluate_exp_att {
 			'&exp_form($POL::exp_att,@scheme)'
 #		       $print_att
 			)
-	 and &sendttresult_to_pageout(0)
 	 and &bye_bye())
 	    if &evaluate_wff_with_tvs($conclusion_with_tvs) eq "T"; # not right
 
@@ -179,7 +178,6 @@ sub evaluate_exp_att {
 			    '&exp_form($POL::exp_att,@scheme)'
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if &evaluate_wff_with_tvs($premise_with_tvs) eq "F"; # not right
 
@@ -189,7 +187,6 @@ sub evaluate_exp_att {
 	$translated_ith_tva = $ith_tva;
 	$translated_ith_tva =~ s/([A-Z])([TF])/&prop2pred($1,@scheme).$2/eg;
 	if ($invalidating and $POL::usrchc =~ /Evaluate/) {
-	    &sendttresult_to_pageout(1);
 	    &pol_template (
 			   $head_CorrectExpATTInvalid,
 			   &msg_CorrectExpATTInvalid($row_num,$translated_ith_tva),
@@ -293,7 +290,6 @@ sub evaluate_exp_att {
 		    '&exp_form($POL::exp_att,@scheme)'
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye())
 	if $num1 < $num2;
     
@@ -305,7 +301,6 @@ sub evaluate_exp_att {
 			'&exp_form($POL::exp_att,@scheme)'
 #		       $print_att
 			)
-	 and &sendttresult_to_pageout(0)
 	 and &bye_bye())
 	    if $num1 == $num2;
 
@@ -316,7 +311,6 @@ sub evaluate_exp_att {
 			'&exp_form($POL::exp_att,@scheme)'
 #		       $print_att
 			)
-	 and &sendttresult_to_pageout(0)
 	 and &bye_bye())
 	}
     
@@ -327,7 +321,6 @@ sub evaluate_exp_att {
 		   '&exp_form($POL::exp_att,@scheme)'
 #		   $print_att
 		   );
-    &sendttresult_to_pageout(0);
     &bye_bye;
 }
 
@@ -374,7 +367,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)'
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if $wff_tv eq "/";
 
@@ -385,7 +377,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)'
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if $ith_user_tva =~ /$wff[TF]/
 		    and $ith_user_tva !~ /($wff$wff_tv)|($wff\/)/ 
@@ -400,7 +391,6 @@ sub evaluate_wff_with_tvs {
 #			   $print_att,
 			    $exp_att_context
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if $ith_tva =~ /$wff[TF]/ and $ith_tva !~ /$wff$wff_tv/;
 
@@ -422,7 +412,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)',
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if $wff_tv eq $rhs_tv && $wff_tv ne '/';
 
@@ -451,7 +440,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)',
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if (&conj($lhs_tv,$rhs_tv) ne $wff_tv && $wff_tv ne '/');
 	}
@@ -471,7 +459,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)',
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if &disj($lhs_tv,$rhs_tv) ne $wff_tv && $wff_tv ne '/';
 	}
@@ -488,7 +475,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)',
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if &cond($lhs_tv,$rhs_tv) ne $wff_tv && $wff_tv ne '/';
 	}
@@ -505,7 +491,6 @@ sub evaluate_wff_with_tvs {
 			    '&exp_form($POL::exp_att,@scheme)',
 #			   $print_att
 			    )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 #		if &bicond($lhs_tv,$rhs_tv) ne $wff_tv && ($wff_tv.$lhs_tv.$rhs_tv) !~ /\//;
 		if &bicond($lhs_tv,$rhs_tv) ne $wff_tv && $wff_tv ne '/';
@@ -534,7 +519,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $row =~ /[^TF\|\/]/;
     
@@ -547,7 +531,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $row !~ /\|/;
 
@@ -560,7 +543,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $row =~ /\|.*\|/;
 
@@ -573,7 +555,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $tvs_in_ith_tva =~ /[TF]/ and length($tvs_in_ith_tva) > length($atoms);
 
@@ -586,7 +567,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $tvs_in_ith_tva =~ /[TF]/ and length($tvs_in_ith_tva) < length($atoms);
 
@@ -599,7 +579,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $tvs_in_ith_tva =~ /^\s*$/ && $row !~ /\//;
 
@@ -612,7 +591,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $tvs_in_ith_tva =~ /[TF]/ && $row =~ /\//;
     
@@ -625,7 +603,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if &count_conns_and_atoms($prop_argument) < &count_TVs_and_slashes($user_tvs[$i]);
 
@@ -638,7 +615,6 @@ sub check_form_of_ATT_row {
 		    '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if &count_conns_and_atoms($prop_argument) > &count_TVs_and_slashes($user_tvs[$i]);
 
@@ -686,7 +662,6 @@ sub check_exp_att_form {
 		    &msg_CannotFutzWithATTDashes($first_2_lines_of_ATT_problem,$first_2_user_lines),
 		    $probref
 		    )
-     and &sendttresult_to_pageout(0)
      and &bye_bye())
 	if $user_line2 !~ /^--*\|--*$/;
     
@@ -699,7 +674,6 @@ sub check_exp_att_form {
 		   '&exp_form($POL::exp_att,@scheme)',
 #		  $print_att
 		   )
-     and &sendttresult_to_pageout(0)
      and &bye_bye)
 	if $exp_att_rows =~ /^\s*?\|*\s*$/ and &tautology($conclusion);
 
@@ -732,7 +706,6 @@ sub check_exp_att_form {
 			   '&exp_form($POL::exp_att,@scheme)',
 #			  $print_att
 			   )
-	     and &sendttresult_to_pageout(0)
 	     and &bye_bye())
 		if $user_tvs[$i-1] eq $user_tvs[$j-1];
 	}
@@ -777,7 +750,6 @@ sub check_for_slashes_not_under_main_connective {
 		   '&exp_form($POL::exp_att,@scheme)',
 #		   $print_att
 		   );
-    &sendttresult_to_pageout(0);
     &bye_bye();
 }    
 
@@ -1040,18 +1012,6 @@ sub doitnow {
 }
 
 
-###
-
-sub prettify {
-    $_[0] =~ s/([\.v]|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/w binary operators to pretty up $seq
-    return $_[0];
-}
-
-###
-sub unprettify {
-    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
-}
-
 ### Delete this for standalone
 
 sub pred2prop {
@@ -1064,15 +1024,4 @@ sub pred2prop {
 }
 
 
-sub sendttresult_to_pageout { # local wrapper for send to pageout
-    my ($score) = @_;
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata) {
-        $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-        $pageoutdata{'assign_probs'} = [ $POL::probnum ];
-        $pageoutdata{'student_score'} = [ $score ];
-	&send_to_pageout(%pageoutdata);
-    }
-    return 1; # required to continue "and" execution
-}
 1;

@@ -488,16 +488,8 @@ sub check_answers {
       "</center>\n";
 
 
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata && @probs_attempted && @student_answers) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ @probs_attempted ];
-        $pageoutdata{'student_score'} =[ @student_answers ];
-        &send_to_pageout(%pageoutdata);
-    }
 
     &pol_footer;
-    &mailit($mailto,$logstuff);
     &end_polpage;
 
 }

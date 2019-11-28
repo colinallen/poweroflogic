@@ -62,14 +62,6 @@ sub twocirc_checkdiag {
 		      $cgi->endform)),
 		;
 
-	    my %pageoutdata = %pageoutid;
-	    if (%pageoutdata) {
-		$pageoutdata{'vendor_assign_id'} = $POL::exercise;
-		$pageoutdata{'assign_probs'} = [ $POL::probnum ];
-		$pageoutdata{'student_score'} = [ 1 ];
-		&send_to_pageout(%pageoutdata);
-	    }
-
 	}
 	print "</table>";
 	print "</div>";
@@ -77,15 +69,6 @@ sub twocirc_checkdiag {
 
     } else {
 	$errmsg= &twocirc_diagnose_error($POL::image,$diag);
-	if ($syllogism !~ /<br>/i) { # statement only
-	    my %pageoutdata = %pageoutid;
-	    if (%pageoutdata) {
-                $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-                $pageoutdata{'assign_probs'} = [ $POL::probnum ];
-                $pageoutdata{'student_score'} = [ 0 ];
-		&send_to_pageout(%pageoutdata);
-	    }
-	}
 	&twocirc_draw($subject,$predicate,$statement,$POL::image);
     }
 }

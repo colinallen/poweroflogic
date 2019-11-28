@@ -852,16 +852,4 @@ sub doitnow {
 }
 
 
-###
-
-sub prettify {
-    $_[0] =~ s/([\.v]|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/w binary operators to pretty up $seq
-    return $_[0];
-}
-
-###
-sub unprettify {
-    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
-}
-
 1;

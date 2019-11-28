@@ -357,12 +357,3 @@ sub process_user_argument {
     &tt_form($probfile_arg);
 }
 
-sub do_pageout {
-    my ($exercise,$probnum,$score) = @_;
-    if (%pageoutdata) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ $probnum ];
-        $pageoutdata{'student_score'} =[ $score ];
-        &send_to_pageout(%pageoutdata);
-    }
-}

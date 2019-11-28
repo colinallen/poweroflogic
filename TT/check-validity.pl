@@ -55,13 +55,6 @@ sub check_validity {
 #	      &bye_bye("cmenzel",$logstuff);
 	  }
       }
-        local %pageoutdata = %pageoutid;
-        if (%pageoutdata && $POL::problem_num) { # send result to pageout
-            $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-            $pageoutdata{'assign_probs'} = [ $POL::problem_num ];
-            $pageoutdata{'student_score'} =[ '1' ];
-            &send_to_pageout(%pageoutdata);
-        }
 	&pol_template($head_CorrectValid,
 		      &msg_CorrectValid,
 		      $probref,
@@ -96,26 +89,7 @@ sub check_validity {
     }
 
 # Otherwise all the checked rows are invalidating.  Just need to get the grammar
-# right in the various success messages; but send pageout data first...
-
-    if ($cgi->param('pageout') ne 'sent') {
-        local %pageoutdata = %pageoutid;
-        if (%pageoutdata && $POL::problem_num) { # send result to pageout
-            $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-            $pageoutdata{'assign_probs'} = [ $POL::problem_num ];
-            $pageoutdata{'student_score'} =[ '1' ];
-            &send_to_pageout(%pageoutdata);
-        }
-    }
-
-# Flag that pageout data indicating the student has gotten the problem
-# correct has been sent.  This prevents redundant pageout data from
-# being sent in the case where, initially, the student correctly
-# indicated that the given argument was invalid (at which point data
-# to that effect was sent to pageout) but had not identified all
-# invalidating rows
-
-    $cgi->param('pageout','sent');  
+# right in the various success messages; 
 
     if (@checked == 1) {  # "Correct" msg when one or more rows checked
 

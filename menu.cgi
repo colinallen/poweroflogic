@@ -212,7 +212,7 @@ sub generate_chapter_menu { # this is the main menu
 
     print # banner and separator
 	"<tr><td colspan=\"4\" style=\"text-align: left; background-color: $HEADERBGCOLOR; padding: 4px\">",
-	"<img src=\"/6ebeta/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 150px; margin-top: 2px; float: right\"/>",
+	"<img src=\"/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 150px; margin-top: 2px; float: right\"/>",
 	h1("Chapter Menu"),
 	"<img src=\"$polcsl\" width=\"600\" alt=\"$EDITION banner image\">",
 	"</td></tr>",

@@ -9,11 +9,14 @@ $cgi->import_names('POL');
 if (-f "lib/pol.conf") { # running from upper level
     require "./lib/pol.conf";
     require "./lib/logit.pl";
-    require "./lib/pageout.pl";
+    require "./lib/wff-subrs.pl";
+    require "./lib/qlwff-subrs.pl";
+
 } else { # down and dirty
     require "../lib/pol.conf";
     require "../lib/logit.pl";
-    require "../lib/pageout.pl";
+    require "../lib/wff-subrs.pl";
+    require "../lib/qlwff-subrs.pl";
 }
 
 @chapternums = sort(keys %chapters);
@@ -121,10 +124,10 @@ sub start_polpage {
 
 
 #    print
-#	"<div style=\"background-color:$ALERTBGCOLOR\">",
-#	"<h3 style=\"color:$ALERTTEXTCOLOR\">",
-#	"Please note that we will be offline for a couple of hours for routine maintenance on Saturday December 23, from approximately 10:30 a.m. Eastern (US) time.",
-#	"</h3>",
+#	"<div style=\"background-color:$ALERTBGCOLOR; padding:3px; text-align:center\">",
+#	"<h4 style=\"color:$ALERTTEXTCOLOR\">",
+#	"Please note that we will be offline briefly for routine aintenance on Friday November 29, approximately 2 p.m. Eastern (US) time.",
+#	"</h4>",
 #	"</div>",
 #	;
     
@@ -191,9 +194,9 @@ sub polmenu {
     my $chapter = $cgi->param('chapter');
     my $title = '';
 
-    my $menuimage = "<img src=\"$EDITION/$cover6e\" #######<<<==== remove $EDITION/ for 6e release
+    my $menuimage = "<img src=\"$cover6e\" #######
                           alt=\"$EDITION cover image\" 
-                          style=\"border: 0px\" width=\"150\">";  # <<<========= NEED 6E UPDATE
+                          style=\"border: 0px\" width=\"150\">"; 
 
     if (!defined($chapter)) {
 	if ($file) {
@@ -214,7 +217,7 @@ sub polmenu {
     $chapterimage = "<div style=\"height: 200px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/6e/Images/6e-ch$chapter.jpeg\" alt=\"$EDITION ch$chapter logo\" style=\"height: 165px; margin-top: 2px;\"/></div>"
 	if $chapters{$chindex};
 
-    $chapterimage = "<div style=\"height: 200px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/6e/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 165px; margin-top: 2px;\"/></div>"
+    $chapterimage = "<div style=\"height: 200px; background-color: $ChIMGCOLOR; text-align:center;\"><img src=\"/Images/6ebulb.jpeg\" alt=\"6th edition lightbulb logo\" style=\"height: 165px; margin-top: 2px;\"/></div>"
 	unless $chapterimage;
     
     #start table
@@ -249,11 +252,12 @@ sub polmenu {
     }
 
     print # menu footer
-	Tr(td({-align=>'left',-colspan=>2},
-	      "\n<hr color=\"black\">",
-	      &grading_status ## will page out be disabled for 5e?
-	      )),
+#	Tr(td({-align=>'left',-colspan=>2},
+#	      "\n<hr color=\"black\">",
+#	      &grading_status ## will page out be disabled for 5e?
+#	      )),
 	"\n</table><!--End Menu Table-->\n";
+    
     print
 	"<div style=\"padding:5px; font-size:10px; text-align:left\">",
 	"&copy; 2012&ndash;",
@@ -275,21 +279,24 @@ sub polmenu_item {
 	$special .= "--&gt;";
 	$special .= "[in new window]";
 	$special .= "</a>";
-	$special .= "</div>";
+	$pecial .= "</div>";
     }
     
     print
-	Tr(td({-align=>'center',-valign=>'top',-width=>"20"},
+	Tr(
+	   td({-align=>'center',-valign=>'top',-width=>"20"},
 	      "\n<a href=\"$uri\" target=\"_top\">",
 	      "\n<img src=\"$smallPoLogo\" border=\"0\" valign=\"bottom\" alt=\"pointer graphic\"></a>",
-	      ),
-	   td({-align=>'left',-valign=>'middle',width=>120},
+	   ),
+
+	    td({-align=>'left',-valign=>'middle',width=>120},
 	      "\n<a href=\"$uri\" target=\"_top\">",
 	      "\n<font color=\"$MENUTEXTCOLOR\" size=\"-1\">",
 	      "\n<strong>$title</strong>",
 	      "</font>",
 	      "</a>",
-	      $special));
+	      $special),
+	);
 }
 
 sub polmenu_item_old {
@@ -342,12 +349,13 @@ sub pol_header {
 
     print  # bounding div to replace table by CA
 	"<div style=\"width: $width; border: 2px solid yellow; padding: 5px; background: $WORKSPACEBGCOLOR\">\n", # not closed until footer
+
 	## infobox
 	"<div style=\"height: 178px; background-color: $HEADERBGCOLOR; padding: 5px; border: 0px solid black\"><!--bounding box for header-->\n",
 
-
 	# header content	
 	"<div style=\"height: 165px; border: 0px solid $PAGEBGCOLOR; margin: 0px;\"><!--  -->\n",
+
 	#images at top
 	## CHAPTER SPECIFIC IMAGE
 	"<div style=\"float: left; padding: 0px 10px 0px 0px\">$chapterimage</div>\n",
@@ -425,9 +433,9 @@ sub bye_bye {
 	$cgi->Dump()
 	    if $debug;
 
-    print
-	"cookie : $pageoutcookie"
-	    if $pageoutcookie and $debug;
+#    print
+#	"cookie : $pageoutcookie"
+#	    if $pageoutcookie and $debug;
     
     print end_html();
 
@@ -449,44 +457,44 @@ sub rot {
 }
 
 ###
-sub grading_status { # CA mods on 1/2/14
-    return "" ## disabled since demise of PageOut
-	if 1 or url() =~ /login\.cgi/;
-    return join("\n",
-		"<font size=\"-2\" color=\"$MENUTEXTCOLOR\">",
-		strong("LOGGED IN AS ",
-		       $pageoutid{student_id}),
-		"<br>",
-		"PageOut record keeping enabled ",
-		"for course ",
-		strong($pageoutid{course_id}).".",
-		"Select <strong>LOGOUT</strong>",
-		"if this is not your id",
-		"or you have finished this session.",
-		"<p>",
-		"Authentication expires ",
-		scalar(gmtime(time+3600)),
-		" GMT",
-		"</font>")
-	if %pageoutid;
-
-    return join("\n",
-		"<FONT SIZE=\"-2\" COLOR=\"$MENUTEXTCOLOR\">",
-		strong("NOT LOGGED IN"),
-		"<BR>",
-		"Result logging will not be activated ",
-		"until you <strong>LOGIN</strong> via ",
-		"the McGraw-Hill PageOut site for your course.",
-		"<P>",
-		"Successful login will require that your browser accepts cookies.",
-		"If your login id is being dropped, please read the
-		instructions in the section &ldquo;Unable to Stay Logged
-		In&rdquo; on the <a
-		href=\"$cgibase/help.cgi#LoginProb\" style=\"color: maroon;\">Help
-		page</a>.",
-		"</FONT>",
-		);
-}
+#sub grading_status { # CA mods on 1/2/14
+#    return "" ## disabled since demise of PageOut
+#	if 1 or url() =~ /login\.cgi/;
+#    return join("\n",
+#		"<font size=\"-2\" color=\"$MENUTEXTCOLOR\">",
+#		strong("LOGGED IN AS ",
+#		       $pageoutid{student_id}),
+#		"<br>",
+#		"PageOut record keeping enabled ",
+#		"for course ",
+#		strong($pageoutid{course_id}).".",
+#		"Select <strong>LOGOUT</strong>",
+#		"if this is not your id",
+#		"or you have finished this session.",
+#		"<p>",
+#		"Authentication expires ",
+#		scalar(gmtime(time+3600)),
+#		" GMT",
+#		"</font>")
+#	if %pageoutid;
+#
+#    return join("\n",
+#		"<FONT SIZE=\"-2\" COLOR=\"$MENUTEXTCOLOR\">",
+#		strong("NOT LOGGED IN"),
+#		"<BR>",
+#		"Result logging will not be activated ",
+#		"until you <strong>LOGIN</strong> via ",
+#		"the McGraw-Hill PageOut site for your course.",
+#		"<P>",
+#		"Successful login will require that your browser accepts cookies.",
+#		"If your login id is being dropped, please read the
+#		instructions in the section &ldquo;Unable to Stay Logged
+#		In&rdquo; on the <a
+#		href=\"$cgibase/help.cgi#LoginProb\" style=\"color: maroon;\">Help
+#		page</a>.",
+#		"</FONT>",
+#		);
+#}
 
 sub chapter_menu_button {
     my $resume = $cgi->param('resume');
@@ -515,3 +523,24 @@ sub html_error { # dirty exit
 	end_html;
     &bye_bye;
 }
+
+## pretty printing forms
+
+sub prettify {
+    $_ = shift;
+    s/,/, /g;
+    s/(v|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/t binary operators to pretty up $seq
+    s/\.:/:./;
+    s/([^:])\./$1 \. /g;
+    return $_;
+}
+
+
+###
+sub unprettify {
+    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
+}
+
+###
+
+

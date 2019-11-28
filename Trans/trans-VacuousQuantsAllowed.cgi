@@ -13,7 +13,6 @@ require '../Trans/trans-subrs.pl';
 
 $program  = $cgi->url;
 $fullprog  = $cgi->self_url;
-local %pageoutdata = %pageoutid;
 
 @prev_chosen = @POL::prev_chosen if @POL::prev_chosen;
 shift @prev_chosen if (@prev_chosen and !$prev_chosen[0]); # get rid of that damn empty first element
@@ -334,7 +333,6 @@ sub user_choice {
 	# Check to see if the user's answer matches the canned answer exactly (save
 	# perhaps for parens)
 	if (&paren_eq($trans,$user_trans)) {
-            &do_pageout($POL::exercise,$POL::problem_num,'1');
 	    $print_this = "<center><h1>Correct!</h1></center>
 <em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center><p /><em>using the scheme of abbreviation</em><p /><center>$scheme</center><p /><em>is correct.</em>";
 	    $action = "Another problem from Exercise $exercise?";
@@ -349,7 +347,6 @@ sub user_choice {
 	my $result = &log_equiv($trans,$user_trans);
 
 	if ($result == 1) {
-            &do_pageout($POL::exercise,$POL::problem_num,'1');
 	    $print_this = "<center><h1>Correct!</h1></center>
 <em>Your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>of the sentence</em><p><center>$sentence</center></p> <em>using the scheme of abbreviation</em><p><center>$scheme</center><p><em>is correct!</em>";
 	    $action = "Another problem from Exercise $exercise?";
@@ -357,7 +354,6 @@ sub user_choice {
 	}
 
 	if ($result == 2) {
-            &do_pageout($POL::exercise,$POL::problem_num,'0');
 	    $print_this = "$MACE4OUTPUT<center><h1>Timed out!</h1></center>
 <em>For theoretical reasons, we are unable to determine precisely whether your symbolization</em><p><center><tt>$pretty_user_trans</tt></center><p><em>of the sentence</em><p><center>$sentence</center><p><em>is correct. However, it is <em>likely</em> that your answer is incorrect if the Web Tutor did not find it to be correct within a few seconds. It is suggested, therefore, that you try it again and CONTINUE READING ONLY IF YOU WANT TO KNOW THE ANSWER: Anything logically equivalent to </em><p><center><tt>$pretty_trans</tt></center><p><em> (using all and only the vocabulary of the given abbreviation scheme) is considered a correct symbolization</em>.</em>";
 	    $action = "Another problem from Exercise $exercise?";
@@ -374,7 +370,6 @@ sub user_choice {
 	    $msg .= $tag;
 	    $action = "Check answer!";
 	} else {
-            &do_pageout($POL::exercise,$POL::problem_num,'0');
 	    $print_this = "<center><h1>The Answer</h1></center><em>
 Your symbolization</em> &lsquo;<tt>$pretty_user_trans</tt>&rsquo; <em>of the sentence</em> <p /><center>$sentence</center><p /> <em>using the scheme of abbreviation</em> <p /><center>$scheme</center><p /><em>is not correct.  Anything logically equivalent to </em><p><center><tt>$pretty_trans</tt></center><p><em> (using all and only the vocabulary of the given abbreviation scheme) is considered a correct symbolization.</em>";
 	    $action = "Another problem from Exercise $exercise?";
@@ -714,18 +709,6 @@ sub paren_eq {
     $wff2 =~ tr/][/)(/;
     return 1 if $wff1 eq $wff2 or "($wff1)" eq $wff2 or $wff1 eq "($wff2)";
     return 0;
-}
-
-###
-sub do_pageout {
-    my ($exercise,$probnum,$score) = @_;
-#    if (%pageoutdata && $probnum && $score) { # send result to pageout
-    if (%pageoutdata && $probnum) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ $probnum ];
-        $pageoutdata{'student_score'} =[ $score ];
-        &send_to_pageout(%pageoutdata);
-    }
 }
 
 ###

@@ -389,16 +389,6 @@ sub checkvalidity {
         &pol_footer;
 	
     }
-    # send result to page out
-    if ($POL::exercise !~ /RYO/) { # not RYO
-	my %pageoutdata = %pageoutid;
-	if (%pageoutdata) {
-	    $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-	    $pageoutdata{'assign_probs'} = [ $POL::probnum ];
-	    $pageoutdata{'student_score'} = [ $score ];
-	    &send_to_pageout(%pageoutdata);
-	}
-    }
 }
 
 sub redraw {

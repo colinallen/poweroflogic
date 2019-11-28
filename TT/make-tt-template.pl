@@ -140,15 +140,5 @@ sub prettify_seq {
     return $_;
 }
 
-### This is the old subroutine for 1st edition when periods served as delimiters
-
-sub old_prettify_seq {  
-    $_ = shift;
-    s/([^: ])\. /$1  /g;                      # remove delimiter dots
-    s/,\s*/  /g;                              # remove delimiter commas; 2 spaces b/t wffs
-    s/([^:])([\.v]|->|<->)([^:])/$1 $2 $3/g;  # add spaces b/w binary connectives
-    s/\s*(:.)\s*/ $1 /g;                      # one space either side of :.
-    return $_;
-}
 
 1;

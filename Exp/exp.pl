@@ -95,15 +95,6 @@ sub prop2pred {
     return $pred_arg;
 }
 
-###
-sub prettify_argument {
-    $arg = $_[0];
-    $arg =~ s/([^:])\. /$1\+ /g;
-    $arg =~ s/([^:])([\.v]|->|<->)([^:])/$1 $2 $3/g;  # add spaces b/w binary connectives
-#    $arg =~ s/\+/\./g;
-    $arg =~ s/\+/&nbsp;/g;
-    return $arg;
-}
 
 ###
 sub html_error { # dirty exit

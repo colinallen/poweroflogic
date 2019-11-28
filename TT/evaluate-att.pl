@@ -265,7 +265,6 @@ sub evaluate_att {
 	}
 	
         if ($invalidating and $POL::action eq 'Invalid') {
-            &do_pageout($POL::exercise,$POL::problem_num,1);  
             &pol_template (
                            $head_CorrectATTInvalid,
                            &msg_CorrectATTInvalid($row_num,$ith_tva),
@@ -276,7 +275,6 @@ sub evaluate_att {
         }
 
 	if ($invalidating and $POL::action eq 'Valid') {
-	    &do_pageout($POL::exercise,$POL::problem_num,0);
 	    &pol_template (
 			   $head_ATTValidButtonPressed,
 			   &msg_ATTValidButtonPressed,
@@ -407,7 +405,6 @@ sub evaluate_att {
  	      next BAR if &calculate_tv($premise,%tva) eq 'F';
  	    }
 	    
- 	    &do_pageout($POL::exercise,$POL::problem_num,0);
  	    &pol_template (
  			   $head_ValidityNotDemonstrated,
  			   &msg_ValidityNotDemonstrated,
@@ -448,7 +445,6 @@ sub evaluate_att {
     
     
     if ($num1 < $num2)  {
-	&do_pageout($POL::exercise,$POL::problem_num,0);
 	&pol_template (
 		       $head_ValidityNotDemonstrated,
 		       &msg_ValidityNotDemonstrated,
@@ -461,7 +457,6 @@ sub evaluate_att {
 
     if ($POL::action =~ /^valid/i) {
         if ($num1 == $num2) {
-            &do_pageout($POL::exercise,$POL::problem_num,1);
             &pol_template (
                            $head_ATTValid,
                            &msg_ATTValid,
@@ -476,7 +471,6 @@ sub evaluate_att {
 ## but if the above (see doc above BAR) were true it only would happen if the
 ## argument were valid.
 	
-	&do_pageout($POL::exercise,$POL::problem_num,1);
 	&pol_template (
 		       $head_ATTValidWithExtraRows,
 		       &msg_ATTValidWithExtraRows($num1,$num2),
@@ -486,7 +480,6 @@ sub evaluate_att {
 	    &bye_bye();
 	}
 
-    &do_pageout($POL::exercise,$POL::problem_num,0);
     &pol_template (
 		   $head_ATTInvalidButtonPressed,
 		   &msg_ATTInvalidButtonPressed,
@@ -1174,16 +1167,5 @@ sub doitnow {
 }
 
 
-###
-
-sub prettify {
-    $_[0] =~ s/([\.v]|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/w binary operators to pretty up $seq
-    return $_[0];
-}
-
-###
-sub unprettify {
-    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
-}
 
 1;

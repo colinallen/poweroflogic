@@ -277,20 +277,6 @@ sub count_connectives {
 # premises so can split on whitespace to form @sequent. (Not
 # currenty used in this code.)
 
-sub unprettify {
-  $_ = shift;
-  s/\s*([^:]\.|v|->|<->)\s*/$1/g;
-  return $_;
-}
-
-### Add some spaces b/w binary operators to pretty up $seq
-sub prettify {
-  ($_) = @_;
-  s/\s*//g;
-  s/([\.v]|->|<->|:\.|\.:)/ $1 /g;
-  s/</&lt;/g;   # "<" inside <pre> needs to be unicoded
-  return $_;
-}
 
 ###
 #

@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 
 require '../lib/header.pl';
-require '../lib/wff-subrs.pl';
-require '../lib/qlwff-subrs.pl';
 require '../Exp/exp.pl';
 require '../Exp/evaluate-exp-att.pl';
 
@@ -286,15 +284,6 @@ sub translator { # generate a translation scheme from expanded argument
 	++$nextletter;
     }
     return @scheme;
-}
-
-sub prettify_argument {
-    my ($arg) = @_;
-    $arg =~ s/([^:])\. /$1\+ /g;
-    $arg =~ s/([^:])([\.v]|->|<->)([^:])/$1 $2 $3/g;  # add spaces b/w binary connectives
-    #    $arg =~ s/\+/\./g;
-    $arg =~ s/\+/&nbsp;/g;
-    return $arg;
 }
 
 sub check_expansions {

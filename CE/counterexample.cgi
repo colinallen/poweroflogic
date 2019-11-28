@@ -147,17 +147,6 @@ sub check_work() {
 	print &ce_constructor_form(&get_argstruc($POL::argument));
     }
 
-    my %pageoutdata = %pageoutid;
-
-    # print "would send to pageout result $score for problem number '$POL::probnum'";
-    
-    if (%pageoutdata) {
-        $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-        $pageoutdata{'assign_probs'} = [ $POL::probnum ];
-        $pageoutdata{'student_score'} = [ $score ];
-	&send_to_pageout(%pageoutdata);
-    }
-
     &pol_footer;
     &end_polpage;
 

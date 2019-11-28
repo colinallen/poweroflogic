@@ -212,9 +212,6 @@ sub evaluate_taut_tt {
 # Simply confirms the TT is correct for probs in 7.5B (Logical Equivalences)
 
 
-    local %pageoutdata = %pageoutid;
-    &do_pageout($POL::exercise,$POL::problem_num,1);
-
     &pol_template($head_ItsATautologyAlright,
 		  &msg_ItsATautologyAlright($wff),
 		  $probref,
@@ -351,12 +348,17 @@ sub check_form_of_tt {
     
     if ($user_arg ne $prob_arg) {
 	print "USER_ARG: $user_arg <br>PROB_ARG: $prob_arg<br>";
+	# &pol_template (
+	# 	       $head_CannotFutzWithArg,
+	# 	       &msg_CannotFutzWithArg($probref,$pretty_wff,&prettify($user_arg)),
+	# 	       $probref,
+	# 	       '&tt_form($POL::original_wff)');
 	&pol_template (
-		       $head_CannotFutzWithArg,
-		       &msg_CannotFutzWithArg($probref,$pretty_wff,&prettify($user_arg)),
+		       $head_CannotFutzWithStatement,
+		       &msg_CannotFutzWithStatement($probref,$pretty_wff,&prettify($user_arg)),
 		       $probref,
 		       '&tt_form($POL::original_wff)');
-	$logstuff .= &msg_CannotFutzWithArg($probref,$pretty_wff,&prettify($user_arg));
+	$logstuff .= &msg_CannotFutzWithStatement($probref,$pretty_wff,&prettify($user_arg));
 	&bye_bye("cmenzel",$logstuff);
     }
 
@@ -423,18 +425,18 @@ sub check_form_of_tt {
 	if ($num_tvs_in_row < $num_tvs_expected_in_row) {
 
 	    &pol_template($head_Incomplete,
-			  &msg_Incomplete($i),
+			  &msg_IncompleteTaut($i),
 			  $probref,
 			  '&tt_form($POL::original_wff)');
-	    $logstuff .= &msg_Incomplete($i);
+	    $logstuff .= &msg_IncompleteTaut($i);
 	    &bye_bye("cmenzel",$logstuff);
 	}
 	if ($num_tvs_in_row > $num_tvs_expected_in_row) {
 	    &pol_template($head_TooManyTVs,
-			  &msg_TooManyTVs($i),
+			  &msg_TooManyTVsTaut($i),
 			  $probref,
 			  '&tt_form($POL::original_wff)');
-	    $logstuff .= &msg_TooManyTVs($i);
+	    $logstuff .= &msg_TooManyTVsTaut($i);
 	    &bye_bye("cmenzel",$logstuff);
 	}
 	$i++;
@@ -611,18 +613,6 @@ sub doitnow {
 #    s/[\[\(]([TF])[\]\)]/$1/g;
 }
 
-
-###
-
-sub prettify {
-    $_[0] =~ s/([\.v]|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/w binary operators to pretty up $seq
-    return $_[0];
-}
-
-###
-sub unprettify {
-    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
-}
 
 ###
 #sub bye_bye {

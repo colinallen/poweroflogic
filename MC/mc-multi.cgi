@@ -400,7 +400,6 @@ sub check_answers {
 
         print "<dt>$qnum. $ques</dt>\n<p>\n";
 
-# PAGEOUT variables
         my $attempted = 0; # Will == 1 iff at least one element of the problem is attempted
         my $gotit = 1;     # Will == 1 iff *all* elements of the mc-multi problem are answered correctly
 
@@ -502,21 +501,10 @@ sub check_answers {
 #    print "\$student_answers: @student_answers<br>";
 # END DEBUG
 
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata && @probs_attempted && @student_answers) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ @probs_attempted ];
-        $pageoutdata{'student_score'} =[ @student_answers ];
-        &send_to_pageout(%pageoutdata);
-    }
 
     &pol_footer;
-    &mailit($mailto,$logstuff);
     &end_polpage;
 
-#    &footer();
-#    &mailit($mailto,$logstuff);
-#    &bye_bye;
 }
 
 ###

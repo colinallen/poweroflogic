@@ -298,20 +298,6 @@ sub check {
 	    "\n</center>\n";
     }
     print "</td></tr></table><!-- end results table -->\n";
-    if (defined $POL::exercise           ## undefined if taking pageout exam
-	&& $POL::exercise !~ /RYO/       ## not user generated
-	&& $POL::usrchc !~ /Example/i) { ## not example
-	my %pageoutdata = %pageoutid;
-	if (%pageoutdata) { # send result to pageout
-	    $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-	    $pageoutdata{'assign_probs'} = [ $POL::probnum ];
-	    $pageoutdata{'student_score'} = [ $score ];
-	    &send_to_pageout(%pageoutdata);
-	}
-    }
-
-    &logit($logstuff);
-#    &mailit($mailto,$logstuff) if $mailto;
     &pol_footer;
     &end_polpage;
 }

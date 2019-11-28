@@ -120,6 +120,7 @@ sub pick_probs {
 	    my $form = $1;
 	    $form =~ s/&gt;/>/g;
 	    $form =~ s/&lt;/</g;
+	    $form = &prettify($form);
 	    $problem = "<span style=\"font-size:16px\">".ascii2utf_html($form)."</span>";
 	}
 	

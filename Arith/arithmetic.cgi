@@ -326,14 +326,6 @@ sub check_answers {
 	$cgi->endform,
 	"</center>\n";
 
-    my %pageoutdata = %pageoutid;
-    if (%pageoutdata &&  @probs_attempted && @student_answers) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $POL::exercise;
-        $pageoutdata{'assign_probs'} = [ @probs_attempted ];
-        $pageoutdata{'student_score'} = [ @student_answers ];
-        &send_to_pageout(%pageoutdata);
-    }
-    
     &pol_footer;
     &end_polpage;
 }

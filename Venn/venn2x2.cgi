@@ -431,17 +431,6 @@ sub checkvalidity {
 	"</table>";
     
     &pol_footer;
-
-
-    # send result to page out
-    # we don't do this any more
-#    my %pageoutdata = %pageoutid;
-#    if (%pageoutdata) {
-#	$pageoutdata{'vendor_assign_id'} = $POL::exercise;
-#	$pageoutdata{'assign_probs'} = [ $POL::probnum, 34, 23 ];
-#	$pageoutdata{'student_score'} = [ $score, 1, 0 ];
-#	&send_to_pageout(%pageoutdata);
-#    }
 }
 
 ## following not currently in use - 6.5.2002 - CA

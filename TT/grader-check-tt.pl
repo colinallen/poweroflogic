@@ -562,27 +562,6 @@ sub count_connectives {
     tr/>~\.v/>~\.v/;
 }
 
-###
-# Add some spaces b/w binary operators to pretty up $wff
-sub prettify {
-    ($_) = @_;
-    s/\s*//g;
-    s/([\.v]|->|<->)/ $1 /g;
-    s/</&lt;/g;   # "<" inside <pre> needs to be unicoded
-    return $_;
-}
-
-###
-# Note this is not the same as removing spaces in the argument
-# Don't replace with s/\s*//g, as we need to retain spaces b/t
-# premises so can split on whitespace to form @sequent. (Not
-# currenty used in this code.)
-
-sub unprettify {
-    $_ = shift;
-    s/\s*([^:]\.|v|->|<->)\s*/$1/g;
-    return $_;
-}
 
 ###
 

@@ -42,18 +42,15 @@ sub check_taut {
 
     start_polpage();
 
-    local %pageoutdata = %pageoutid;
 
     if ($action eq "Tautology") {
         if ($wff_status eq "taut") {
-            &do_pageout($POL::exercise,$POL::problem_num,1);
             &pol_template($head_CorrectTautology,
                           &msg_CorrectTautology($wff),
                           $probref,
                           "display");
             &bye_bye();
         }
-#        &do_pageout($POL::exercise,$POL::problem_num,0);
 	&pol_template($head_NotATautology,
 		      &msg_NotATautology($wff),
 		      $probref,
@@ -63,7 +60,6 @@ sub check_taut {
 
     if ($action eq "Contradiction") {
         if ($wff_status eq "contra") {
-            &do_pageout($POL::exercise,$POL::problem_num,1);
             &pol_template($head_CorrectContra,
                           &msg_CorrectContra($wff),
                           $probref,
@@ -71,7 +67,6 @@ sub check_taut {
             &bye_bye();
         }
 
-#        &do_pageout($POL::exercise,$POL::problem_num,0);
 	&pol_template($head_NotAContra,
 		      &msg_NotAContra($wff),
 		      $probref,
@@ -81,7 +76,6 @@ sub check_taut {
 
     if ($action eq "Contingent") {
         if ($wff_status eq "contingent") {
-            &do_pageout($POL::exercise,$POL::problem_num,1);
             &pol_template($head_CorrectContingent,
                           &msg_CorrectContingent($wff),
                           $probref,
@@ -89,7 +83,6 @@ sub check_taut {
 	    &bye_bye();
         }
 
-#        &do_pageout($POL::exercise,$POL::problem_num,0);
 	&pol_template($head_NotContingent,
 		      &msg_NotContingent($wff),
 		      $probref,
@@ -98,14 +91,5 @@ sub check_taut {
     }
 }
 
-sub do_pageout {
-    my ($exercise,$probnum,$score) = @_;
-    if (%pageoutdata) { # send result to pageout
-        $pageoutdata{'vendor_assign_id'} = $exercise;
-        $pageoutdata{'assign_probs'} = [ $probnum ];
-        $pageoutdata{'student_score'} =[ $score ];
-        &send_to_pageout(%pageoutdata);
-    }
-}
 
 1;

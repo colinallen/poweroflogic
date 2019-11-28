@@ -32,6 +32,7 @@ $head_TooManyATTVertBars = "<h1>Too many vertical bars!</h1>";
 $head_MungedTVA = "<h1>Corrupted truth value assignment!</h1>";
 $head_TooManyRows = "<h1>Too many rows!</h1>";
 $head_NotEnoughRows = "<h1>Not enough rows!</h1>";
+$head_CannotFutzWithStatement = "<h1>Statement has been altered!</h1>";
 $head_CannotFutzWithArg = "<h1>Argument has been altered!</h1>";
 $head_CannotFutzWithATTArg = "<h1>Argument has been altered!</h1>";
 $head_CannotFutzWithATTDashes = "<h1>Dashes have been altered!</h1>";
@@ -349,6 +350,19 @@ sub msg_InconsistentTVA {
 }
 
 ###
+sub msg_CannotFutzWithStatement {
+    return "<center>The statement in the problem you are working on has been altered.  It should be
+<pre>
+$_[1]
+</pre>
+but it has been altered so that it looks like this:
+<pre>
+$_[2]
+</pre>
+Please restore the original statement.  You may wish to copy the statement from this page and paste it into the previous page.  If you wish to experiment with truth tables, go to the option on the starting menu for creating your own truth table.</center>"
+}
+
+###
 sub msg_CannotFutzWithArg {
     return "<center>The argument in the problem you are working on has been altered.  It should be
 <pre>
@@ -575,8 +589,18 @@ sub msg_Incomplete {
 }
 
 ###
+sub msg_IncompleteTaut {
+    return "You are missing a truth value in Row $_[0] (and perhaps elsewhere).  Be sure you have a column of truth values (<tt>T</tt>s and <tt>F</tt>s in upper case) entered below every logical operator that occurs in the statement &mdash; and <i>only</i> below those elements of the statement.  In particular, be sure you put nothing beneath the atomic <em>parts</em> of the statement.";
+}
+
+###
 sub msg_TooManyTVs {
-    return "You have too many truth values in Row $_[0].  Be sure you have a column of truth values (<tt>T</tt>s and <tt>F</tt>s in upper case) entered below every connective and every atomic statement that occurs as a premise or as the conclusion in the argument, but no where else. In particular, be sure you put nothing beneath the atomic <em>parts</em> of the compound statements in the argument."; 
+    return "You have too many truth values in Row $_[0].  Be sure you have a column of truth values (<tt>T</tt>s and <tt>F</tt>s in upper case) entered below every connective and every atomic statement that occurs as a premise or as the conclusion in the argument, but nowhere else. In particular, be sure you put nothing beneath the atomic <em>parts</em> of the compound statements in the argument."; 
+    }
+
+###
+sub msg_TooManyTVsTaut {
+    return "You have too many truth values in Row $_[0].  Be sure you have a column of truth values (<tt>T</tt>s and <tt>F</tt>s in upper case) entered below every connective in the statement, but nowhere else. In particular, be sure you put nothing beneath the atomic <em>parts</em> of the statement."; 
     }
 
 ###

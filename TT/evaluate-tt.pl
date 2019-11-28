@@ -341,7 +341,6 @@ sub valid_or_invalid {
       $cgi->hidden(-name=>'assigned_tvs',-default=>$assigned_tvs),"\n",
       $cgi->hidden(-name=>'user_tvs',-default=>@user_tvs),"\n",
       $cgi->hidden(-name=>'prev_chosen',-default=>@prev_chosen),"\n",
-      $cgi->hidden('pageout'),"\n",  # rolls over pageout=sent if not all invalidating
       ;                              # rows have been found; set in check-validity.pl
 
     for ($i=0;$i<$num_rows;$i++) {
@@ -614,27 +613,6 @@ sub doitnow {
     s/[\[\(]T<->F[\]\)]/F/g;
     s/[\[\(]F<->T[\]\)]/F/g;
     s/[\[\(]F<->F[\]\)]/T/g;
-}
-
-
-###
-require "../lib/wff-subrs.pl";
-
-sub prettify {
-	$_ = shift;
-#    $_ = ascii2utf(shift);
-    s/,/, /g;
-    s/(v|->|<->|:\.|\.:)/ $1 /g; # Add some spaces b/t binary operators to pretty up $seq
-    s/\.:/:./;
-    s/([^:])\./$1 \. /g;
-    return $_;
-}
-
-
-###
-sub unprettify {
-#    $_[0] = utf2ascii($_[0]);
-    $_[0] =~ s/ ([\.v]|->|<->) /$1/g;
 }
 
 
