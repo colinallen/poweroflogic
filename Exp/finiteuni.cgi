@@ -78,23 +78,18 @@ sub pick_arg {
     $instructions .= $PREVCHOICEINSTRUCTION if @POL::prevchosen;
     
     &pol_header($subtitle,$instructions);  # create outer table, print the PoL header and instructions
-    
+
     print              # create a table containing all the problems in the exercise
 	"<table width=\"100%\" border=0><!-- argument selection table -->\n";
     
     my $count=0;
-    
+
     foreach $argument (@problems) {
 	++$count;
-	$pretty_arg = &prettify_argument($argument);
-	#	$pretty_arg =~ s/[<]/&lt;/g;
-	#	$pretty_arg =~ s/[>]/&gt;/g;
-	#	$pretty_arg =~ s/(:\.)|(\.:)/<img align=bottom src=$therefore>/;
-	#	$pretty_arg = "(Too long to display)" if length($pretty_arg) > 85;
-	#	$pretty_arg =~ s/(:\.)|(\.:)/<img align=bottom src=$therefore>/ if $pretty_arg !~ /Too/;
+	$pretty_arg = $argument;
 
 	my $button_image = $prevchosen{$count} ? $smallgreyPoLogo : $smallPoLogo;
-	
+
 	print 
 	    Tr(td({-valign=>'middle',-align=>'left'},
 		  $cgi->startform,
