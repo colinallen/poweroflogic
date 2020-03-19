@@ -97,10 +97,36 @@ sub extraORmissing_cons {
   return 0;
 }      
 
+# # Checks to make sure $wff contains no "overloaded" predicates, i.e.,
+# # no predicates serving as both m- and n-place predicates, for m != n
+# sub overloaded_pred {
+#   my $wff = shift;
+#   my $atwffs = &atomic_subwffs($wff);
+
+#   chop $atwffs;                         # chop that trailing space
+#   @atwffs = split(' ',$atwffs);
+#   while (@atwffs) {
+#     my $wf1 = pop @atwffs;
+#     next if &wff($wf1) =~ /identity/;   # Might wanna remove identities from value of &atomic_subwffs
+#     my $wf1_pred = substr($wf1,0,1);
+#     foreach $wf2 (@atwffs) {
+#       next if &wff($wf2) =~ /identity/; # Might wanna remove identities from value of &atomic_subwffs
+#       my $wf2_pred = substr($wf2,0,1);
+#       next if $wf1_pred ne $wf2_pred;
+#       return "$wf1_pred"                # return the first overloaded pred found
+# 	if length($wf1) != length($wf2);
+#     }
+#   }
+#   return 0;
+# }
+
 # Checks to make sure $wff contains no "overloaded" predicates, i.e.,
 # no predicates serving as both m- and n-place predicates, for m != n
 sub overloaded_pred {
-  my $wff = shift;
+  my ($wff1,$wff2) = @_;
+  $wff1 = &add_outer_parens($wff1);
+  $wff2 = &add_outer_parens($wff2);
+  my $wff = "$wff1"."v"."$wff2";
   my $atwffs = &atomic_subwffs($wff);
 
   chop $atwffs;                         # chop that trailing space
@@ -119,6 +145,7 @@ sub overloaded_pred {
   }
   return 0;
 }
+
 
 # Checks to make sure the user's symbolization does not contain any 
 # vacuous quantifiers in symbolizations that are naturally translated

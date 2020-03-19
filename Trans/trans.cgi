@@ -281,7 +281,7 @@ sub user_choice {
 	# any wff formed from $trans and $user_trans will do here:
 	$overloaded_pred = &overloaded_pred($trans,$user_trans); 
 	if ($overloaded_pred) {
-	    $msg = "<em>In your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>you are using the predicate letter</em> &lsquo;<tt>$overloaded_pred</tt>&rsquo; <em>in a way that does not square with the given scheme of abbreviation.  Try again!</em>";
+	    $msg = "<em>In your symbolization</em> &nbsp;&lsquo;<tt>$pretty_user_trans</tt>&rsquo;&nbsp; <em>you are using the predicate letter</em> &lsquo;<tt>$overloaded_pred</tt>&rsquo; <em>in a way that does not square with the given scheme of abbreviation. More specifically, you are probably using</em> &lsquo;<tt>$overloaded_pred</tt>&rsquo; <em>either as a 1-place predicate when it should be a 2-place predicate or you're using it as a 2-place predicate when it should be a 1-place predicate. Try again!</em>";
 	    $msg .= "\n<p>";
 	    $action = "Check answer!";
 	    last CASE
@@ -405,7 +405,9 @@ sub user_choice {
 	$cgi->startform(-onsubmit=>"replaceCharsRev(document.getElementById('user_trans'))"),
 	;
 
-    print "<div style=\"border:0px solid red; color:$INSTRUCTCOLOR; text-align:center; padding:0px 0px 10px 0px\">$msg</div>"
+    # print "<div style=\"border:0px solid red; color:$INSTRUCTCOLOR; text-align:center; padding:0px 0px 10px 0px\">$msg</div>"
+    print "<div style=\"border:0px solid red; color:$INSTRUCTCOLOR; padding:0px 0px 10px 0px\">$msg</div>"
+
 	if $msg;
 	
     if ($action =~ /Check/) {
