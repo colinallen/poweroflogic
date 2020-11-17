@@ -126,7 +126,7 @@ sub start_polpage {
 #    print
 #	"<div style=\"background-color:$ALERTBGCOLOR; padding:3px; text-align:center\">",
 #	"<h4 style=\"color:$ALERTTEXTCOLOR\">",
-#	"Please note that we will be offline briefly for routine aintenance on Friday November 29, approximately 2 p.m. Eastern (US) time.",
+#	"This is the 6th edition site. The previous <a href=\"/cgi/5e/menu.cgi\">5th edition site</a> will remain accessible through Spring 2020.",
 #	"</h4>",
 #	"</div>",
 #	;

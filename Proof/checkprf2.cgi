@@ -181,7 +181,7 @@ sub proofcheckform {
 					 'MP: p->q, p :. q',
 					 'MT: p->q, ~q :. ~p',
 					 'DS: pvq, ~p :. q or pvq, ~q :. p',
-					 'Simp: p.q :. p or q',
+					 'Simp: p.q :. p or p.q :. q',
 					 'Conj: p, q :. (p.q)',
 					 'HS: p->q, (q->r) :. (p->r)',
 					 'Add: p :. pvq or p :. qvp',
