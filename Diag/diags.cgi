@@ -57,9 +57,6 @@ $instructions = "Pick an argument to diagram<br>\n".$PREVCHOICEINSTRUCTION
 
 &pickprob if !$POL::prob;
 
-
-
-
 $POL::prob = &rot($POL::prob);
 ($argument,$answer) = split(/::/,$POL::prob);
 $answer = &reversestring($answer);
@@ -90,6 +87,7 @@ for ($POL::usrchc) {
     /Not an argument/i      and do { &check_arg; last; };
     /Check Brackets/        and do { &check_brackets; last; };
     /Check/                 and do { &check; last;};
+    /show answer/i          and do { &reveal_diagram; last;};
     /$restorelabel/         and do { &restore_arg; last};
     &display_argument(@userdiag);
 }
@@ -354,6 +352,7 @@ sub display_argument {
     &pol_header("Exercise $POL::exercise, Argument Diagrams",
 		$instructions);
 
+
     if ($POL::usrchc =~ /Check Brackets/) { # then we just arrived
 	print
 	    "<table border=\"0\" cellspacing=\"2\" width=\"100%\">",
@@ -390,10 +389,16 @@ sub display_argument {
 
     print "</td><td valign=\"top\">";
 
+    ++$POL::xattempts if $POL::usrchc =~ /Check Diagram/;
+    $cgi->param('xattempts', $POL::xattempts);
+    $attempt_text = "[attempts: $POL::xattempts]" if $POL::xattempts;
+
     print
 	$cgi->startform,
 	$cgi->hidden('probnum'),
 	$cgi->hidden('prevchosen'),
+	$cgi->hidden(-name=>'xattempts'),
+	
 	unless $clean;
 
     my $border = "0px solid black";
@@ -469,11 +474,19 @@ sub display_argument {
     &output_colorrow($row0) if $row1; # in case of incomplete row
     &output_workrow($row1) if $row1;
 
+
+    if ($POL::xattempts > 5) {
+	$attempt_text .= "<br>";
+	$attempt_text .= $cgi->submit(-name=>usrchc,-value=>"Show Answer");
+    } 
+
+
     print
 	"<tr>",
 	"<td colspan=\"20\" bgcolor=\"$DIAGBGCOLOR\" align=\"center\">",
 	$cgi->submit(-name=>usrchc,-value=>$redrawlabel),
 	$cgi->submit(-name=>usrchc,-value=>$checklabel),
+	$cgi->center("<font size=\"-1\">$attempt_text</font>"),
 	"</td></tr>"
 	    unless $clean;
 
@@ -486,14 +499,14 @@ sub display_argument {
 	;
 
     &display_english('');
-
     $problem = &rot($problem);
     print $cgi->hidden(-name=>prob,-value=>$problem);
-    $cgi->hidden('probnum'),
-    $cgi->hidden('prevchosen'),
+    #$cgi->hidden('probnum');
     print $cgi->hidden('bracketed',1);
     print $cgi->hidden('exercise');
     print $cgi->endform;
+
+
 }
 
 ###
@@ -812,11 +825,12 @@ sub compare_elements {
 sub check_aux {
     my ($answer) = @_;
     $answer =~ s/$anstab/$tab/g;
+
     my @guess_rows = split(/$newln/,$guess);
     my @answer_rows =  split(/$newln/,$answer);
     my $response;
     
-#    print "<p>Will compare guess[$guess] ($#guess_rows rows) to answer[$answer] ($#answer_rows rows)<p>"; #debug
+    #print "<p>Will compare guess[$guess] ($#guess_rows rows) to answer[$answer] ($#answer_rows rows)<p>"; #debug
 
     return 'more' if $#guess_rows > $#answer_rows;
 
@@ -1001,3 +1015,51 @@ sub get_out {
     &end_polpage;
 }
 
+sub reveal_diagram {
+    &pol_header("Exercise $POL::exercise, Argument Diagrams",
+		'Peek at answer');
+
+    print "Here is an arrangement of premises and conclusion that would be accepted as correct...";
+    $clean = 1;
+
+    @answers = split(/ro/,$answer);
+    #print $answers[0];
+
+    @rows = split(':',&reversestring($answers[0]));
+    
+    my $row1; my $row2;
+    my $prev; local @prevcolorrow; local @colorrow;
+    my $count = 0; my $rowcount = 0;
+    my $loopcount = 0;
+
+    print
+	"\n",
+	"<center>",
+	"<!--begin diagram table-->\n",
+	"<table -style=\"border: $border; ",
+	"  cellspacing: 0px; ",
+	"  cellpadding: 2px; ",
+	"  align: center;\"",
+	">",
+	;
+    
+
+    for (@rows) {
+        ++$loopcount;
+	my $row = $_;
+	$row =~ s/\>//g;
+	&output_workrow(&makebox($row),$count);
+    }
+    
+
+    print
+	"</td></tr>",
+	"</table><!--end containing table-->",
+	"</center>",
+	"<hr>",
+	;
+
+    &display_english;
+    print "<p>Use the browser's back arrow to return to your previous work.</p>";
+    
+}
