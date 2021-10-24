@@ -475,7 +475,7 @@ sub display_argument {
     &output_workrow($row1) if $row1;
 
 
-    if ($POL::xattempts > 5) {
+    if ($POL::xattempts > 4) {
 	$attempt_text .= "<br>";
 	$attempt_text .= $cgi->submit(-name=>usrchc,-value=>"Show Answer");
     } 
